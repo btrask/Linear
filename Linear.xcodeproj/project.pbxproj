@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		0E46E8B40D352FE300651412 /* LNDocumentObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E46E8B30D352FE300651412 /* LNDocumentObject.m */; };
 		0EA62CF40CD20A0E0047E83E /* LNGraphic.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EA62CF30CD20A0E0047E83E /* LNGraphic.m */; };
-		0EDDD5260D369BCA003E0369 /* LNMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EDDD5250D369BCA003E0369 /* LNMutableArray.m */; };
 		0EE2B3BB0CCA183C0010820D /* NSObjectAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE2B3BA0CCA183C0010820D /* NSObjectAdditions.m */; };
 		0EE95C8C0CC33A1A00A3D867 /* LNWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE95C8B0CC33A1A00A3D867 /* LNWindowController.m */; };
 		0EE95C8F0CC33AA100A3D867 /* LNCanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE95C8E0CC33AA100A3D867 /* LNCanvasView.m */; };
@@ -31,8 +30,6 @@
 		0E46E8B30D352FE300651412 /* LNDocumentObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNDocumentObject.m; sourceTree = "<group>"; };
 		0EA62CF20CD20A0E0047E83E /* LNGraphic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNGraphic.h; sourceTree = "<group>"; };
 		0EA62CF30CD20A0E0047E83E /* LNGraphic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNGraphic.m; sourceTree = "<group>"; };
-		0EDDD5240D369BCA003E0369 /* LNMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNMutableArray.h; sourceTree = "<group>"; };
-		0EDDD5250D369BCA003E0369 /* LNMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNMutableArray.m; sourceTree = "<group>"; };
 		0EE2B3B90CCA183C0010820D /* NSObjectAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSObjectAdditions.h; sourceTree = "<group>"; };
 		0EE2B3BA0CCA183C0010820D /* NSObjectAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSObjectAdditions.m; sourceTree = "<group>"; };
 		0EE95C8A0CC33A1A00A3D867 /* LNWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNWindowController.h; sourceTree = "<group>"; };
@@ -164,8 +161,6 @@
 			children = (
 				2A37F4B0FDCFA73011CA2CEA /* main.m */,
 				32DBCF750370BD2300C91783 /* Linear_Prefix.pch */,
-				0EDDD5240D369BCA003E0369 /* LNMutableArray.h */,
-				0EDDD5250D369BCA003E0369 /* LNMutableArray.m */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -258,7 +253,6 @@
 				0EE2B3BB0CCA183C0010820D /* NSObjectAdditions.m in Sources */,
 				0EA62CF40CD20A0E0047E83E /* LNGraphic.m in Sources */,
 				0E46E8B40D352FE300651412 /* LNDocumentObject.m in Sources */,
-				0EDDD5260D369BCA003E0369 /* LNMutableArray.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,14 +327,16 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_FAST_OBJC_DISPATCH = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 			};
 			name = Debug;
 		};
@@ -355,14 +351,16 @@
 				GCC_FAST_OBJC_DISPATCH = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = NS_BLOCK_ASSERTIONS;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk/;
 				SDKROOT_ppc = /Developer/SDKs/MacOSX10.4u.sdk/;
 			};

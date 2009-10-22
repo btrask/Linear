@@ -7,12 +7,9 @@
 @class LNCanvasStorage;
 @class LNLine;
 
-// Other Sources
-@class LNMutableArray;
-
 @interface LNShape : LNGraphic <NSCoding, NSCopying>
 {
-	LNMutableArray *_sides;
+	NSMutableArray *_sides;
 	NSArray        *_cachedPoints;
 	NSBezierPath   *_cachedPath;
 }

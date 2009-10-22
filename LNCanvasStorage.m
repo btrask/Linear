@@ -8,9 +8,6 @@
 // Categories
 #import "NSObjectAdditions.h"
 
-// Other Sources
-#import "LNMutableArray.h"
-
 NSString *const LNCanvasStorageDidChangeGraphicsNotification = @"LNCanvasStorageDidChangeGraphics";
 NSString *const LNCanvasStorageGraphicsAddedKey              = @"LNCanvasStorageGraphicsAdded";
 NSString *const LNCanvasStorageGraphicsRemovedKey            = @"LNCanvasStorageGraphicsRemoved";
@@ -38,21 +35,29 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 {
 	return [_shapes arrayByAddingObjectsFromArray:_lines];
 }
-- (void)addGraphics:(NSArray *)anArray
+- (void)addGraphics:(id)collection
 {
-	id graphic;
-	NSEnumerator *graphicEnum = [anArray objectEnumerator];
-	while((graphic = [graphicEnum nextObject])) {
+	if(![collection count]) return;
+	for(id const graphic in collection) {
 		if([graphic isKindOfClass:[LNLine class]]) [_lines addObject:graphic];
 		else if([graphic isKindOfClass:[LNShape class]]) [_shapes addObject:graphic];
 		else NSAssert(0, @"Invalid graphic.");
+		[graphic AE_addObserver:self selector:@selector(graphicWillChange:) name:LNGraphicWillChangeNotification];
+		[graphic AE_addObserver:self selector:@selector(graphicDidChange:) name:LNGraphicDidChangeNotification];
 	}
+	[self AE_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:collection forKey:LNCanvasStorageGraphicsAddedKey]];
 }
 - (void)removeGraphics:(NSSet *)aSet
 {
+	for(id const graphic in aSet) {
+		if([graphic isKindOfClass:[LNLine class]]) for(LNShape *const shape in [[_shapes copy] autorelease]) if([[shape sides] indexOfObjectIdenticalTo:graphic] != NSNotFound) [self removeGraphics:[NSSet setWithObject:shape]];
+		[graphic AE_removeObserver:self name:LNGraphicWillChangeNotification];
+		[graphic AE_removeObserver:self name:LNGraphicDidChangeNotification];
+	}
 	NSArray *const old = [aSet allObjects];
 	[_lines removeObjectsInArray:old];
 	[_shapes removeObjectsInArray:old];
+	[self AE_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:aSet forKey:LNCanvasStorageGraphicsRemovedKey]];
 }
 
 #pragma mark -
@@ -68,33 +73,6 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 	[self AE_postNotificationName:LNCanvasStorageGraphicDidChangeNotification userInfo:[NSDictionary dictionaryWithObject:[aNotif object] forKey:LNCanvasStorageGraphicKey]];
 }
 
-#pragma mark LNMutableArrayDelegate Protocol
-
-- (NSUndoManager *)undoManagerForArray:(LNMutableArray *)sender
-{
-	return [self LN_undoManager];
-}
-- (void)array:(LNMutableArray *)sender
-        didAddObject:(id)anObject
-{
-	[(LNDocumentObject *)anObject setDocument:[self document]];
-	[anObject AE_addObserver:self selector:@selector(graphicWillChange:) name:LNGraphicWillChangeNotification];
-	[anObject AE_addObserver:self selector:@selector(graphicDidChange:) name:LNGraphicDidChangeNotification];
-	[self AE_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:[NSSet setWithObject:anObject] forKey:LNCanvasStorageGraphicsAddedKey]];
-}
-- (void)array:(LNMutableArray *)sender
-        didRemoveObject:(id)anObject
-{
-	if([anObject isKindOfClass:[LNLine class]]) {
-		LNShape *shape;
-		NSEnumerator *shapeEnum = [[[_shapes copy] autorelease] objectEnumerator];
-		while((shape = [shapeEnum nextObject])) if([[shape sides] indexOfObjectIdenticalTo:anObject] != NSNotFound) [_shapes removeObjectIdenticalTo:shape];
-	}
-	[anObject AE_removeObserver:self name:LNGraphicWillChangeNotification];
-	[anObject AE_removeObserver:self name:LNGraphicDidChangeNotification];
-	[self AE_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:[NSSet setWithObject:anObject] forKey:LNCanvasStorageGraphicsRemovedKey]];
-}
-
 #pragma mark NSCoding Protocol
 
 - (id)initWithCoder:(NSCoder *)aCoder
@@ -104,9 +82,9 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 
 		id lines = [aCoder decodeObjectForKey:@"Lines"];
 		if([lines isKindOfClass:[NSSet class]]) lines = [lines allObjects]; // Ancient BC.
-		[_lines addObjectsFromArray:lines];
+		[self addGraphics:lines];
 
-		[_shapes addObjectsFromArray:[aCoder decodeObjectForKey:@"Shapes"]];
+		[self addGraphics:[aCoder decodeObjectForKey:@"Shapes"]];
 	}
 	return self;
 }
@@ -129,10 +107,8 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 - (id)init
 {
 	if((self = [super init])) {
-		_lines = [[LNMutableArray alloc] init];
-		[_lines setDelegate:self];
-		_shapes = [[LNMutableArray alloc] init];
-		[_shapes setDelegate:self];
+		_lines = [[NSMutableArray alloc] init];
+		_shapes = [[NSMutableArray alloc] init];
 	}
 	return self;
 }

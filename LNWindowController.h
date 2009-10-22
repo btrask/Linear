@@ -9,7 +9,7 @@
 // Views
 #import "LNCanvasView.h"
 
-@interface LNWindowController : NSWindowController
+@interface LNWindowController : NSWindowController <NSToolbarDelegate>
 {
 	@private
 	IBOutlet NSSegmentedControl *toolsControl;

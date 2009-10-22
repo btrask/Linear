@@ -7,8 +7,11 @@
 // Categories
 #import "NSObjectAdditions.h"
 
-// Other Sources
-#import "LNMutableArray.h"
+@interface LNShape(Private)
+
+- (void)_init;
+
+@end
 
 @implementation LNShape
 
@@ -23,6 +26,7 @@
 			return nil;
 		}
 		[_sides addObjectsFromArray:sides];
+		[self _init];
 	}
 	return self;
 }
@@ -75,27 +79,14 @@
 	[self AE_postNotificationName:LNGraphicDidChangeNotification];
 }
 
-#pragma mark LNMutableArrayDelegate Protocol
+#pragma mark -LNShape(Private)
 
-- (NSUndoManager *)undoManagerForArray:(LNMutableArray *)sender
+- (void)_init
 {
-	return [self LN_undoManager];
-}
-- (void)array:(LNMutableArray *)sender
-        didAddObject:(id)anObject
-{
-	[anObject AE_addObserver:self selector:@selector(sideWillChange:) name:LNGraphicWillChangeNotification];
-	[anObject AE_addObserver:self selector:@selector(sideDidChange:) name:LNGraphicDidChangeNotification];
-	[self recache];
-	[self AE_postNotificationName:LNGraphicDidChangeNotification];
-}
-- (void)array:(LNMutableArray *)sender
-        didRemoveObject:(id)anObject
-{
-	[anObject AE_removeObserver:self name:LNGraphicWillChangeNotification];
-	[anObject AE_removeObserver:self name:LNGraphicDidChangeNotification];
-	[self recache];
-	[self AE_postNotificationName:LNGraphicDidChangeNotification];
+	for(LNLine *const line in _sides) {
+		[line AE_addObserver:self selector:@selector(sideWillChange:) name:LNGraphicWillChangeNotification];
+		[line AE_addObserver:self selector:@selector(sideDidChange:) name:LNGraphicDidChangeNotification];
+	}
 }
 
 #pragma mark LNGraphicSubclassResponsibility Protocol
@@ -137,7 +128,9 @@
 {
 	if((self = [super initWithCoder:aCoder])) {
 		id const sides = [aCoder decodeObjectForKey:@"Sides"];
-		if(![sides isKindOfClass:[NSSet class]]) _sides = [sides retain];
+		if([sides isKindOfClass:[NSSet class]]) _sides = [[LNLine chainOfConnectingLines:sides] copy];
+		else _sides = [sides retain];
+		[self _init];
 	}
 	return self;
 }
@@ -159,9 +152,8 @@
 - (id)init
 {
 	if((self = [super init])) {
-		_sides = [[LNMutableArray alloc] init];
-		[_sides setDelegate:self];
-		[self setColor:[NSColor colorWithDeviceWhite:0.5 alpha:1]];
+		_sides = [[NSMutableArray alloc] init];
+		[self setColor:[NSColor colorWithDeviceWhite:0.5f alpha:1.0f]];
 	}
 	return self;
 }

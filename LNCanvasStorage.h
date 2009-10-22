@@ -8,9 +8,6 @@
 @class LNLine;
 @class LNShape;
 
-// Other Sources
-@class LNMutableArray;
-
 extern NSString *const LNCanvasStorageDidChangeGraphicsNotification;
 extern NSString *const LNCanvasStorageGraphicsAddedKey;
 extern NSString *const LNCanvasStorageGraphicsRemovedKey;
@@ -22,15 +19,15 @@ extern NSString *const LNCanvasStorageGraphicKey;
 @interface LNCanvasStorage : LNDocumentObject <NSCoding>
 {
 	@private
-	LNMutableArray *_lines;
-	LNMutableArray *_shapes;
+	NSMutableArray *_lines;
+	NSMutableArray *_shapes;
 }
 
-- (NSMutableArray *)lines;
-- (NSMutableArray *)shapes;
+- (NSArray *)lines;
+- (NSArray *)shapes;
 
 - (NSArray *)graphics;
-- (void)addGraphics:(NSArray *)anArray;
+- (void)addGraphics:(id)collection;
 - (void)removeGraphics:(NSSet *)aSet;
 
 - (void)graphicWillChange:(NSNotification *)aNotif;

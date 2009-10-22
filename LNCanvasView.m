@@ -68,8 +68,8 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	LNLine *const line = [self primarySelection];
 	if(![line isKindOfClass:[LNLine class]]) return NSBeep();
 	NSSet *const dividedLines = [line linesByDividingAtLines:[self selection]];
-	[[[self canvasStorage] lines] removeObject:line];
-	[[[self canvasStorage] lines] addObjectsFromArray:[dividedLines allObjects]];
+	[[self canvasStorage] removeGraphics:[NSSet setWithObject:line]];
+	[[self canvasStorage] addGraphics:dividedLines];
 	[self deselectAll:self];
 }
 - (IBAction)divideByPrimary:(id)sender
@@ -79,8 +79,8 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	NSMutableSet *const selection = [[[self selection] mutableCopy] autorelease];
 	[selection removeObject:line];
 	NSSet *const dividedLines = [line linesByDividingLines:selection];
-	[[[self canvasStorage] lines] removeObjectsInArray:[selection allObjects]];
-	[[[self canvasStorage] lines] addObjectsFromArray:[dividedLines allObjects]];
+	[[self canvasStorage] removeGraphics:selection];
+	[[self canvasStorage] addGraphics:dividedLines];
 	[self deselectAll:self];
 }
 - (IBAction)extend:(id)sender
@@ -96,7 +96,8 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	NSEnumerator *const selectionEnum = [[self selection] objectEnumerator];
 	while((graphic = [selectionEnum nextObject])) if([graphic isKindOfClass:[LNLine class]]) [selectedLines addObject:graphic];
 	LNShape *const shape = [[[LNShape alloc] initWithSides:selectedLines] autorelease];
-	[[[self canvasStorage] shapes] addObject:shape];
+	if(!shape) return;
+	[[self canvasStorage] addGraphics:[NSSet setWithObject:shape]];
 	[self select:[NSSet setWithObject:shape] byExtendingSelection:NO];
 }
 
@@ -142,7 +143,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 			if(outGraphic) *outGraphic = graphic;
 			if(outPart) *outPart = LNEndPart;
 			return;
-		} else if(LNPointDistance([graphic start], aPoint) <= 4) {
+		} else if(LNPointDistance([(LNLine *)graphic start], aPoint) <= 4) {
 			if(outGraphic) *outGraphic = graphic;
 			if(outPart) *outPart = LNStartPart;
 			return;
@@ -173,7 +174,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	NSEnumerator *const graphicEnum = [[[self canvasStorage] graphics] objectEnumerator];
 	while((graphic = [graphicEnum nextObject])) {
 		if(![graphic isKindOfClass:[LNLine class]] || [excludedSet containsObject:graphic]) continue;
-		float const startDist = LNPointDistance([graphic start], aPoint);
+		float const startDist = LNPointDistance([(LNLine *)graphic start], aPoint);
 		float const endDist = LNPointDistance([graphic end], aPoint);
 		if(startDist < dist) {
 			dist = startDist;
@@ -218,7 +219,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
         byExtendingSelection:(BOOL)flag
 {
 	NSMutableSet *const realSet = [NSMutableSet set];
-	[realSet unionSet:[];
+//	[realSet unionSet:[];
 	if([aSet isEqualToSet:_selection]) return;
 	if(flag) {
 		if(![aSet count]) return;
@@ -333,7 +334,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 #pragma mark NSMenuValidation Protocol
 
-- (BOOL)validateMenuItem:(id<NSMenuItem>)anItem
+- (BOOL)validateMenuItem:(NSMenuItem *)anItem
 {
 	SEL const action = [anItem action];
 	if(![[self selection] count]) {
@@ -398,8 +399,8 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	}
 
 	if([_primarySelection isKindOfClass:[LNLine class]]) {
-		NSPoint const p1 = [_primarySelection start];
-		NSPoint const p2 = [_primarySelection end];
+		NSPoint const p1 = [(LNLine *)_primarySelection start];
+		NSPoint const p2 = [(LNLine *)_primarySelection end];
 		NSBezierPath *const startHandle = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(p1.x - 2.5, p1.y - 2.5, 5, 5)];
 		NSBezierPath *const endHandle = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(p2.x - 2.5, p2.y - 2.5, 5, 5)];
 		[[NSColor whiteColor] set];
@@ -480,7 +481,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 					[clickedGraphic setStart:firstPoint];
 					[clickedGraphic setEnd:latestPoint];
 					clickedPart = LNEndPart;
-					[[[self canvasStorage] lines] addObject:clickedGraphic];
+					[[self canvasStorage] addGraphics:[NSSet setWithObject:clickedGraphic]];
 					[self deselectAll:self];
 					[self setPrimarySelection:clickedGraphic];
 				} else if(LNBodyPart == clickedPart) {
@@ -514,14 +515,15 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 				break;
 			case LNExtendTool:
 				if(LNStartPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([clickedGraphic end], latestPoint), 0.01) ofEnd:LNStartEnd];
-				else if(LNEndPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([clickedGraphic start], latestPoint), 0.01) ofEnd:LNEndEnd];
+				else if(LNEndPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([(LNLine *)clickedGraphic start], latestPoint), 0.01) ofEnd:LNEndEnd];
 				break;
 			case LNRotateTool:
 				if(LNStartPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([clickedGraphic end], latestPoint) ofEnd:LNStartEnd];
-				else if(LNEndPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([clickedGraphic start], latestPoint) ofEnd:LNEndEnd];
+				else if(LNEndPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([(LNLine *)clickedGraphic start], latestPoint) ofEnd:LNEndEnd];
 				break;
 		}
 		if([latestEvent type] == NSFlagsChanged && !caughtFlagsChanged) [ignoredEvents addObject:latestEvent];
+		[self setNeedsDisplay:YES];
 	}
 	[[self window] discardEventsMatchingMask:NSAnyEventMask beforeEvent:nil];
 	NSEvent *event;

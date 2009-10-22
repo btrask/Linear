@@ -59,7 +59,7 @@
 
 #pragma mark NSMenuValidation Protocol
 
-- (BOOL)validateMenuItem:(id<NSMenuItem>)anItem
+- (BOOL)validateMenuItem:(NSMenuItem *)anItem
 {
 	SEL const action = [anItem action];
 	if(@selector(changeTool:) == action) {
@@ -70,26 +70,6 @@
 		if(@selector(delete:) == action) return NO;
 	}
 	return [self respondsToSelector:action];
-}
-
-#pragma mark NSToolbarDelegate Protocol
-
-- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar
-                   itemForItemIdentifier:(NSString *)itemIdentifier
-		   willBeInsertedIntoToolbar:(BOOL)flag
-{
-	NSToolbarItem *const item = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
-	[item setPaletteLabel:NSLocalizedString(@"Tools", @"Tools toolbar item label.")];
-	[item setView:toolsControl];
-	return item;
-}
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
-{
-	return [NSArray arrayWithObject:@"LNToolsControlItem"];
-}
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
-{
-	return [self toolbarDefaultItemIdentifiers:toolbar];
 }
 
 #pragma mark NSOutlineViewDataSource Protocol
@@ -209,6 +189,26 @@
 - (id)init
 {
 	return [super initWithWindowNibName:@"LNDocument"];
+}
+
+#pragma mark -<NSToolbarDelegate>
+
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar
+                   itemForItemIdentifier:(NSString *)itemIdentifier
+		   willBeInsertedIntoToolbar:(BOOL)flag
+{
+	NSToolbarItem *const item = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+	[item setPaletteLabel:NSLocalizedString(@"Tools", @"Tools toolbar item label.")];
+	[item setView:toolsControl];
+	return item;
+}
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
+{
+	return [NSArray arrayWithObject:@"LNToolsControlItem"];
+}
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
+{
+	return [self toolbarDefaultItemIdentifiers:toolbar];
 }
 
 @end
