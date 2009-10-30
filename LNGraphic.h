@@ -21,13 +21,10 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
-// Inherits from
-#import "LNDocumentObject.h"
-
 extern NSString *const LNGraphicWillChangeNotification;
 extern NSString *const LNGraphicDidChangeNotification;
 
-@interface LNGraphic : LNDocumentObject <NSCoding, NSCopying>
+@interface LNGraphic : NSObject <NSCoding, NSCopying>
 {
 	@private
 	NSColor *_color;

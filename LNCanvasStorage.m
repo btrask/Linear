@@ -117,14 +117,6 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 	[aCoder encodeObject:[[_shapes copy] autorelease] forKey:@"Shapes"];
 }
 
-#pragma mark LNDocumentObject
-
-- (void)setDocument:(LNDocument *)aDoc
-{
-	[super setDocument:aDoc];
-	[[self graphics] makeObjectsPerformSelector:@selector(setDocument:) withObject:[self document]];
-}
-
 #pragma mark NSObject
 
 - (id)init
@@ -138,7 +130,6 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 - (void)dealloc
 {
 	[self AE_removeObserver];
-	[self setDocument:nil];
 	[_lines release];
 	[_shapes release];
 	[super dealloc];

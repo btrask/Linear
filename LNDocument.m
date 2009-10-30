@@ -62,7 +62,6 @@ NSString *const LNDocumentCanvasStorageDidChangeNotification = @"LNDocumentCanva
 {
 	[_canvasStorage release];
 	_canvasStorage = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
-	[_canvasStorage setDocument:self];
 	[self AE_postNotificationName:LNDocumentCanvasStorageDidChangeNotification];
 	return _canvasStorage != nil;
 }
@@ -73,7 +72,6 @@ NSString *const LNDocumentCanvasStorageDidChangeNotification = @"LNDocumentCanva
 {
 	if((self = [super init])) {
 		_canvasStorage = [[LNCanvasStorage alloc] init];
-		[_canvasStorage setDocument:self];
 	}
 	return self;
 }

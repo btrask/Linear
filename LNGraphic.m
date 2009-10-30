@@ -52,7 +52,6 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 {
 	if(aColor == _color || [aColor isEqual:_color]) return;
 	[self AE_postNotificationName:LNGraphicWillChangeNotification];
-	[[self LN_undo] setColor:_color];
 	[_color release];
 	_color = [aColor copy];
 	[self AE_postNotificationName:LNGraphicDidChangeNotification];
