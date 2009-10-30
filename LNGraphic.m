@@ -44,6 +44,7 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 
 #pragma mark -LNGraphic
 
+@synthesize canvasStorage = _canvasStorage;
 - (NSColor *)color
 {
 	return [[_color retain] autorelease];
@@ -52,6 +53,7 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 {
 	if(aColor == _color || [aColor isEqual:_color]) return;
 	[self LN_postNotificationName:LNGraphicWillChangeNotification];
+	[[self undo] setColor:_color];
 	[_color release];
 	_color = [aColor copy];
 	[self LN_postNotificationName:LNGraphicDidChangeNotification];
@@ -63,6 +65,17 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 {
 	[_color release];
 	[super dealloc];
+}
+
+#pragma mark -<LNUndoing>
+
+- (NSUndoManager *)undoManager
+{
+	return [[self canvasStorage] undoManager];
+}
+- (id)undo
+{
+	return [[self undoManager] prepareWithInvocationTarget:self];
 }
 
 #pragma mark -<NSCoding>

@@ -62,26 +62,28 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 - (void)addGraphics:(id)collection
 {
 	if(![collection count]) return;
-	for(id const graphic in collection) {
+	for(LNGraphic *const graphic in collection) {
 		if([graphic isKindOfClass:[LNLine class]]) [_lines addObject:graphic];
 		else if([graphic isKindOfClass:[LNShape class]]) [_shapes addObject:graphic];
 		else NSAssert(0, @"Invalid graphic.");
 		[graphic LN_addObserver:self selector:@selector(graphicWillChange:) name:LNGraphicWillChangeNotification];
+		[graphic setCanvasStorage:self];
 		[graphic LN_addObserver:self selector:@selector(graphicDidChange:) name:LNGraphicDidChangeNotification];
 	}
+	[[self undo] removeGraphics:collection];
 	[self LN_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:collection forKey:LNCanvasStorageGraphicsAddedKey]];
 }
-- (void)removeGraphics:(NSSet *)aSet
+- (void)removeGraphics:(id)collection
 {
-	for(id const graphic in aSet) {
+	for(LNGraphic *const graphic in collection) {
 		if([graphic isKindOfClass:[LNLine class]]) for(LNShape *const shape in [[_shapes copy] autorelease]) if([[shape sides] indexOfObjectIdenticalTo:graphic] != NSNotFound) [self removeGraphics:[NSSet setWithObject:shape]];
 		[graphic LN_removeObserver:self name:LNGraphicWillChangeNotification];
 		[graphic LN_removeObserver:self name:LNGraphicDidChangeNotification];
 	}
-	NSArray *const old = [aSet allObjects];
+	NSArray *const old = [[collection objectEnumerator] allObjects];
 	[_lines removeObjectsInArray:old];
 	[_shapes removeObjectsInArray:old];
-	[self LN_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:aSet forKey:LNCanvasStorageGraphicsRemovedKey]];
+	[self LN_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:[NSSet setWithArray:old] forKey:LNCanvasStorageGraphicsRemovedKey]];
 }
 
 #pragma mark -
@@ -113,6 +115,17 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 	[_lines release];
 	[_shapes release];
 	[super dealloc];
+}
+
+#pragma mark -<LNUndoing>
+
+- (NSUndoManager *)undoManager
+{
+	return [[self canvasView] undoManager];
+}
+- (id)undo
+{
+	return [[self undoManager] prepareWithInvocationTarget:self];
 }
 
 #pragma mark -<NSCoding>

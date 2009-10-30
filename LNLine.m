@@ -260,6 +260,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 {
 	if(NSEqualPoints(start, _p1) && NSEqualPoints(end, _p2)) return;
 	[self LN_postNotificationName:LNGraphicWillChangeNotification];
+	[[self undo] _setStart:_p1 end:_p2];
 	_p1 = start;
 	_p2 = end;
 	[self LN_postNotificationName:LNGraphicDidChangeNotification];

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0EA62CF40CD20A0E0047E83E /* LNGraphic.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EA62CF30CD20A0E0047E83E /* LNGraphic.m */; };
 		0EBC1D7E109AE00700DFBA31 /* LNFoundationAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EBC1D7D109AE00700DFBA31 /* LNFoundationAdditions.m */; };
+		0EBC1DBD109AE61200DFBA31 /* LNUndoing.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EBC1DBC109AE61200DFBA31 /* LNUndoing.m */; };
 		0EE95C8C0CC33A1A00A3D867 /* LNWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE95C8B0CC33A1A00A3D867 /* LNWindowController.m */; };
 		0EE95C8F0CC33AA100A3D867 /* LNCanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE95C8E0CC33AA100A3D867 /* LNCanvasView.m */; };
 		0EE95C920CC33B2B00A3D867 /* LNLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE95C910CC33B2B00A3D867 /* LNLine.m */; };
@@ -29,6 +30,8 @@
 		0EA62CF30CD20A0E0047E83E /* LNGraphic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNGraphic.m; sourceTree = "<group>"; };
 		0EBC1D7C109AE00700DFBA31 /* LNFoundationAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNFoundationAdditions.h; sourceTree = "<group>"; };
 		0EBC1D7D109AE00700DFBA31 /* LNFoundationAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNFoundationAdditions.m; sourceTree = "<group>"; };
+		0EBC1DBB109AE61200DFBA31 /* LNUndoing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNUndoing.h; sourceTree = "<group>"; };
+		0EBC1DBC109AE61200DFBA31 /* LNUndoing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNUndoing.m; sourceTree = "<group>"; };
 		0EE95C8A0CC33A1A00A3D867 /* LNWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNWindowController.h; sourceTree = "<group>"; };
 		0EE95C8B0CC33A1A00A3D867 /* LNWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LNWindowController.m; sourceTree = "<group>"; };
 		0EE95C8D0CC33AA100A3D867 /* LNCanvasView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LNCanvasView.h; sourceTree = "<group>"; };
@@ -148,6 +151,8 @@
 				32DBCF750370BD2300C91783 /* Linear_Prefix.pch */,
 				0EBC1D7C109AE00700DFBA31 /* LNFoundationAdditions.h */,
 				0EBC1D7D109AE00700DFBA31 /* LNFoundationAdditions.m */,
+				0EBC1DBB109AE61200DFBA31 /* LNUndoing.h */,
+				0EBC1DBC109AE61200DFBA31 /* LNUndoing.m */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -239,6 +244,7 @@
 				0EE95CB60CC4711A00A3D867 /* LNCanvasStorage.m in Sources */,
 				0EA62CF40CD20A0E0047E83E /* LNGraphic.m in Sources */,
 				0EBC1D7E109AE00700DFBA31 /* LNFoundationAdditions.m in Sources */,
+				0EBC1DBD109AE61200DFBA31 /* LNUndoing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

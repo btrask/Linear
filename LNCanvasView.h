@@ -61,6 +61,7 @@ extern NSString *const LNCanvasViewSelectionDidChangeNotification;
 
 @property(retain) LNCanvasStorage *canvasStorage;
 @property(readonly) NSSet *selection;
+@property(retain) LNGraphic *primarySelection;
 @property(assign) LNCanvasTool tool;
 
 - (void)getGraphic:(out id *)outGraphic linePart:(out LNLinePart *)outPart atPoint:(NSPoint)aPoint;
@@ -70,8 +71,6 @@ extern NSString *const LNCanvasViewSelectionDidChangeNotification;
 - (void)select:(NSSet *)aSet byExtendingSelection:(BOOL)flag;
 - (void)deselect:(NSSet *)aSet;
 - (void)invertSelect:(NSSet *)aSet; // Selects unselected and deselects selected objects in aSet.
-- (id)primarySelection;
-- (void)setPrimarySelection:(id)aGraphic;
 
 - (void)moveSelectionBy:(NSSize)aSize;
 

@@ -21,35 +21,10 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
-// Models
-@class LNCanvasStorage;
+@protocol LNUndoing <NSObject>
 
-// Other Sources
-#import "LNUndoing.h"
-
-extern NSString *const LNGraphicWillChangeNotification;
-extern NSString *const LNGraphicDidChangeNotification;
-
-@interface LNGraphic : NSObject <LNUndoing, NSCoding, NSCopying>
-{
-	@private
-	LNCanvasStorage *_canvasStorage;
-	NSColor *_color;
-}
-
-+ (NSBezierPath *)highlightStyleBezierPath:(NSBezierPath *)path;
-
-@property(assign) LNCanvasStorage *canvasStorage;
-@property(copy) NSColor *color;
-
-@end
-
-@interface LNGraphic(LNGraphicSubclassResponsibility)
-
-- (NSBezierPath *)bezierPath;
-- (NSRect)frame;
-- (void)draw;
-- (BOOL)shouldFlattenHighlight;
-- (NSString *)displayString;
+@required
+@property(readonly) NSUndoManager *undoManager;
+- (id)undo;
 
 @end

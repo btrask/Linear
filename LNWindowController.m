@@ -70,7 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 - (void)canvasSelectionDidChange:(NSNotification *)aNotif
 {
 	NSMutableIndexSet *const indexes = [NSMutableIndexSet indexSet];
-	for(id const graphic in [canvas selection]) {
+	for(LNGraphic *const graphic in [canvas selection]) {
 		int const i = [graphicsOutline rowForItem:graphic];
 		if(i >= 0) [indexes addIndex:i];
 	}
@@ -218,6 +218,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #pragma mark -<NSWindowDelegate>
 
+- (NSUndoManager *)windowWillReturnUndoManager:(NSWindow *)window
+{
+	return [[self document] undoManager];
+}
 - (void)windowDidResignKey:(NSNotification *)notification
 {
 	if(!_optionKeyDown) return;

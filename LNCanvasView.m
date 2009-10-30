@@ -86,34 +86,34 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 - (IBAction)dividePrimary:(id)sender
 {
-	LNLine *const line = [self primarySelection];
+	LNGraphic *const line = [self primarySelection];
 	if(![line isKindOfClass:[LNLine class]]) return NSBeep();
-	NSSet *const dividedLines = [line linesByDividingAtLines:[self selection]];
+	NSSet *const dividedLines = [(LNLine *)line linesByDividingAtLines:[self selection]];
 	[[self canvasStorage] removeGraphics:[NSSet setWithObject:line]];
 	[[self canvasStorage] addGraphics:dividedLines];
 	[self deselectAll:self];
 }
 - (IBAction)divideByPrimary:(id)sender
 {
-	LNLine *const line = [self primarySelection];
+	LNGraphic *const line = [self primarySelection];
 	if(![line isKindOfClass:[LNLine class]]) return NSBeep();
 	NSMutableSet *const selection = [[[self selection] mutableCopy] autorelease];
 	[selection removeObject:line];
-	NSSet *const dividedLines = [line linesByDividingLines:selection];
+	NSSet *const dividedLines = [(LNLine *)line linesByDividingLines:selection];
 	[[self canvasStorage] removeGraphics:selection];
 	[[self canvasStorage] addGraphics:dividedLines];
 	[self deselectAll:self];
 }
 - (IBAction)extend:(id)sender
 {
-	LNLine *const line = [self primarySelection];
+	LNGraphic *const line = [self primarySelection];
 	if(![line isKindOfClass:[LNLine class]]) return NSBeep();
-	[line extendToClosestLineInSet:[self selection]];
+	[(LNLine *)line extendToClosestLineInSet:[self selection]];
 }
 - (IBAction)makeShapeWithSelection:(id)sender
 {
 	NSMutableSet *const selectedLines = [NSMutableSet set];
-	for(id const graphic in [self selection]) if([graphic isKindOfClass:[LNLine class]]) [selectedLines addObject:graphic];
+	for(LNGraphic *const graphic in [self selection]) if([graphic isKindOfClass:[LNLine class]]) [selectedLines addObject:graphic];
 	LNShape *const shape = [[[LNShape alloc] initWithSides:selectedLines] autorelease];
 	if(!shape) return;
 	[[self canvasStorage] addGraphics:[NSSet setWithObject:shape]];
@@ -154,15 +154,26 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 {
 	return [[_selection copy] autorelease];
 }
+- (id)primarySelection
+{
+	return [[_primarySelection retain] autorelease];
+}
+- (void)setPrimarySelection:(id)aGraphic
+{
+	if(aGraphic == _primarySelection) return;
+	[_primarySelection release];
+	_primarySelection = [aGraphic retain];
+	if(aGraphic) [self select:[NSSet setWithObject:aGraphic] byExtendingSelection:YES];
+}
 @synthesize tool = _tool;
 
 #pragma mark -
 
 - (void)getGraphic:(out id *)outGraphic linePart:(out LNLinePart *)outPart atPoint:(NSPoint)aPoint
 {
-	id graphic = [self primarySelection];
+	LNGraphic *graphic = [self primarySelection];
 	if([graphic isKindOfClass:[LNLine class]]) {
-		if(LNPointDistance([graphic end], aPoint) <= 4) {
+		if(LNPointDistance([(LNLine *)graphic end], aPoint) <= 4) {
 			if(outGraphic) *outGraphic = graphic;
 			if(outPart) *outPart = LNEndPart;
 			return;
@@ -174,9 +185,9 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	}
 	for(graphic in [[self canvasStorage] graphics]) {
 		if([graphic isKindOfClass:[LNLine class]]) {
-			if([graphic distanceToPoint:aPoint] > 4) continue;
+			if([(LNLine *)graphic distanceToPoint:aPoint] > 4) continue;
 		} else if([graphic isKindOfClass:[LNShape class]]) {
-			if(![[graphic bezierPath] containsPoint:aPoint]) continue;
+			if(![[(LNShape *)graphic bezierPath] containsPoint:aPoint]) continue;
 		} else continue;
 		if(outGraphic) *outGraphic = graphic;
 		if(outPart) *outPart = LNBodyPart;
@@ -189,19 +200,19 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 {
 	float dist = FLT_MAX;
 	if(outLine) *outLine = nil;
-	for(id const graphic in [[self canvasStorage] graphics]) {
+	for(LNGraphic *const graphic in [[self canvasStorage] graphics]) {
 		if(![graphic isKindOfClass:[LNLine class]] || [excludedSet containsObject:graphic]) continue;
 		float const startDist = LNPointDistance([(LNLine *)graphic start], aPoint);
-		float const endDist = LNPointDistance([graphic end], aPoint);
+		float const endDist = LNPointDistance([(LNLine *)graphic end], aPoint);
 		if(startDist < dist) {
 			dist = startDist;
 			if(outEnd) *outEnd = LNStartEnd;
-			if(outLine) *outLine = graphic;
+			if(outLine) *outLine = (LNLine *)graphic;
 		}
 		if(endDist < dist) {
 			dist = endDist;
 			if(outEnd) *outEnd = LNEndEnd;
-			if(outLine) *outLine = graphic;
+			if(outLine) *outLine = (LNLine *)graphic;
 		}
 	}
 	return dist;
@@ -241,7 +252,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 }
 - (void)invertSelect:(NSSet *)aSet
 {
-	for(id const graphic in aSet) {
+	for(LNGraphic *const graphic in aSet) {
 		if([_selection containsObject:graphic]) [_selection removeObject:graphic];
 		else [_selection addObject:graphic];
 	}
@@ -249,23 +260,12 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	[self setNeedsDisplay:YES];
 	[self LN_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
 }
-- (id)primarySelection
-{
-	return [[_primarySelection retain] autorelease];
-}
-- (void)setPrimarySelection:(id)aGraphic
-{
-	if(aGraphic == _primarySelection) return;
-	[_primarySelection release];
-	_primarySelection = [aGraphic retain];
-	if(aGraphic) [self select:[NSSet setWithObject:aGraphic] byExtendingSelection:YES];
-}
 
 #pragma mark -
 
 - (void)moveSelectionBy:(NSSize)aSize
 {
-	for(id const graphic in [self selection]) if([graphic isKindOfClass:[LNLine class]]) [graphic offsetBy:aSize];
+	for(LNGraphic *const graphic in [self selection]) if([graphic isKindOfClass:[LNLine class]]) [(LNLine *)graphic offsetBy:aSize];
 }
 
 #pragma mark -
@@ -447,7 +447,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 				if(_selectionLine) {
 					[_selectionLine setEnd:latestPoint];
 					NSMutableSet *const selection = [NSMutableSet set];
-					for(id const graphic in [[self canvasStorage] graphics]) if([graphic isKindOfClass:[LNLine class]] && [_selectionLine getIntersection:NULL withLine:graphic]) [selection addObject:graphic];
+					for(LNGraphic *const graphic in [[self canvasStorage] graphics]) if([graphic isKindOfClass:[LNLine class]] && [_selectionLine getIntersection:NULL withLine:(LNLine *)graphic]) [selection addObject:graphic];
 					[self select:initialSelection byExtendingSelection:NO];
 					[self invertSelect:selection];
 					if([[self selection] containsObject:initialPrimarySelection]) [self setPrimarySelection:initialPrimarySelection];

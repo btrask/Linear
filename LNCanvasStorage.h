@@ -29,6 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 // Views
 @class LNCanvasView;
 
+// Other Sources
+#import "LNUndoing.h"
+
 extern NSString *const LNCanvasStorageDidChangeGraphicsNotification;
 extern NSString *const LNCanvasStorageGraphicsAddedKey;
 extern NSString *const LNCanvasStorageGraphicsRemovedKey;
@@ -37,7 +40,7 @@ extern NSString *const LNCanvasStorageGraphicWillChangeNotification;
 extern NSString *const LNCanvasStorageGraphicDidChangeNotification;
 extern NSString *const LNCanvasStorageGraphicKey;
 
-@interface LNCanvasStorage : NSObject <NSCoding>
+@interface LNCanvasStorage : NSObject <LNUndoing, NSCoding>
 {
 	@private
 	LNCanvasView *_canvasView;
@@ -51,7 +54,7 @@ extern NSString *const LNCanvasStorageGraphicKey;
 
 - (NSArray *)graphics;
 - (void)addGraphics:(id)collection;
-- (void)removeGraphics:(NSSet *)aSet;
+- (void)removeGraphics:(id)collection;
 
 - (void)graphicWillChange:(NSNotification *)aNotif;
 - (void)graphicDidChange:(NSNotification *)aNotif;
