@@ -26,8 +26,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 // Models
 #import "LNCanvasStorage.h"
 
-// Categories
-#import "NSObjectAdditions.h"
+// Other Sources
+#import "LNFoundationAdditions.h"
 
 float LNRadiansToDegrees(float rad)
 {
@@ -55,7 +55,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 
 @implementation LNLine
 
-#pragma mark Class Methods
+#pragma mark +LNLine
 
 + (id)line
 {
@@ -74,7 +74,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	return [line _chainOfConnectingLines:aSet endWith:line];
 }
 
-#pragma mark Instance Methods
+#pragma mark -LNLine
 
 - (id)initWithStart:(NSPoint)start end:(NSPoint)end
 {
@@ -84,9 +84,6 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	}
 	return self;
 }
-
-#pragma mark -
-
 - (NSPoint)start
 {
 	return _p1;
@@ -104,6 +101,8 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	[self _setStart:_p1 end:aPoint];
 }
 
+#pragma mark -
+
 - (void)offsetBy:(NSSize)aSize
 {
 	[self _setStart:NSMakePoint(_p1.x + aSize.width, _p1.y + aSize.height) end:NSMakePoint(_p2.x + aSize.width, _p2.y + aSize.height)];
@@ -115,8 +114,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 {
 	return LNPointAngle(_p1, _p2);
 }
-- (void)setAngle:(float)aFloat
-        ofEnd:(LNLineEnd)anEnd
+- (void)setAngle:(float)aFloat ofEnd:(LNLineEnd)anEnd
 {
 	float const l = [self length];
 	if(LNEndEnd == anEnd) [self _setStart:_p1 end:NSMakePoint(_p1.x + cosf(LNDegreesToRadians(aFloat)) * l, _p1.y + sinf(LNDegreesToRadians(aFloat)) * l)];
@@ -126,8 +124,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 {
 	return LNPointDistance(_p1, _p2);
 }
-- (void)setLength:(float)aFloat
-        ofEnd:(LNLineEnd)anEnd
+- (void)setLength:(float)aFloat ofEnd:(LNLineEnd)anEnd
 {
 	float const a = atan2f(_p2.y - _p1.y, _p2.x - _p1.x);
 	if(LNEndEnd == anEnd) [self _setStart:_p1 end:NSMakePoint(_p1.x + cosf(a) * aFloat, _p1.y + sinf(a) * aFloat)];
@@ -138,8 +135,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	if(LNEndEnd == anEnd) return _p2;
 	return _p1;
 }
-- (void)setLocation:(NSPoint)aPoint
-        ofEnd:(LNLineEnd)anEnd
+- (void)setLocation:(NSPoint)aPoint ofEnd:(LNLineEnd)anEnd
 {
 	if(LNEndEnd == anEnd) [self setEnd:aPoint];
 	else [self setStart:aPoint];
@@ -154,9 +150,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 
 #pragma mark -
 
-- (void)getClosestPoint:(out NSPoint *)outPoint
-        part:(out LNLinePart *)outPart
-	toPoint:(NSPoint)aPoint
+- (void)getClosestPoint:(out NSPoint *)outPoint part:(out LNLinePart *)outPart toPoint:(NSPoint)aPoint
 {
 	float length = [self length];
 	if(!length) {
@@ -182,8 +176,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	[self getClosestPoint:&closestPoint part:NULL toPoint:aPoint];
 	return LNPointDistance(closestPoint, aPoint);
 }
-- (BOOL)getIntersection:(out NSPoint *)outPoint
-	withLine:(LNLine *)line
+- (BOOL)getIntersection:(out NSPoint *)outPoint withLine:(LNLine *)line
 {
 	NSPoint const op1 = [line start], op2 = [line end];
 	float const numeA = ((op2.x - op1.x) * (_p1.y - op1.y)) - ((op2.y - op1.y) * (_p1.x - op1.x));
@@ -267,16 +260,15 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	if(foundSomething) [self setLocation:closest ofEnd:direction];
 }
 
-#pragma mark Private Protocol
+#pragma mark -LNLine(Private)
 
-- (void)_setStart:(NSPoint)start
-        end:(NSPoint)end
+- (void)_setStart:(NSPoint)start end:(NSPoint)end
 {
 	if(NSEqualPoints(start, _p1) && NSEqualPoints(end, _p2)) return;
-	[self AE_postNotificationName:LNGraphicWillChangeNotification];
+	[self LN_postNotificationName:LNGraphicWillChangeNotification];
 	_p1 = start;
 	_p2 = end;
-	[self AE_postNotificationName:LNGraphicDidChangeNotification];
+	[self LN_postNotificationName:LNGraphicDidChangeNotification];
 }
 - (NSArray *)_chainOfConnectingLines:(NSSet *)aSet
              endWith:(LNLine *)lastLine
@@ -295,7 +287,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	return nil;
 }
 
-#pragma mark LNGraphicSubclassResponsibility Protocol
+#pragma mark -LNGraphic(LNGraphicSubclassResponsibility)
 
 - (NSBezierPath *)bezierPath
 {
@@ -322,7 +314,24 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	return [NSString stringWithFormat:NSLocalizedString(@"%.0f, %.0f to %.0f, %.0f", @"Line display string format (%.0f is replaced with the various X and Y coordinates)."), _p1.x, _p1.y, _p2.x, _p2.y];
 }
 
-#pragma mark NSCoding Protocol
+#pragma mark -NSObject
+
+- (id)init
+{
+	if((self = [super init])) {
+		[self setColor:[NSColor blackColor]];
+	}
+	return self;
+}
+
+#pragma mark -
+
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"<%@ %p: %@ - %@>", [self class], self, NSStringFromPoint(_p1), NSStringFromPoint(_p2)];
+}
+
+#pragma mark -<NSCoding>
 
 - (id)initWithCoder:(NSCoder *)aCoder
 {
@@ -338,30 +347,13 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	[aCoder encodePoint:_p2 forKey:@"P2"];
 }
 
-#pragma mark NSCopying Protocol
+#pragma mark -<NSCopying>
 
 - (id)copyWithZone:(NSZone *)aZone
 {
 	id const dupe = [super copyWithZone:aZone];
 	[dupe _setStart:_p1 end:_p2];
 	return dupe;
-}
-
-#pragma mark NSObject
-
-- (id)init
-{
-	if((self = [super init])) {
-		[self setColor:[NSColor blackColor]];
-	}
-	return self;
-}
-
-#pragma mark -
-
-- (NSString *)description
-{
-	return [NSString stringWithFormat:@"<%@ %p: %@ - %@>", [self class], self, NSStringFromPoint(_p1), NSStringFromPoint(_p2)];
 }
 
 @end

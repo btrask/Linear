@@ -26,6 +26,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 @class LNLine;
 @class LNShape;
 
+// Views
+@class LNCanvasView;
+
 extern NSString *const LNCanvasStorageDidChangeGraphicsNotification;
 extern NSString *const LNCanvasStorageGraphicsAddedKey;
 extern NSString *const LNCanvasStorageGraphicsRemovedKey;
@@ -37,12 +40,14 @@ extern NSString *const LNCanvasStorageGraphicKey;
 @interface LNCanvasStorage : NSObject <NSCoding>
 {
 	@private
+	LNCanvasView *_canvasView;
 	NSMutableArray *_lines;
 	NSMutableArray *_shapes;
 }
 
-- (NSArray *)lines;
-- (NSArray *)shapes;
+@property(assign) LNCanvasView *canvasView;
+@property(readonly) NSArray *lines;
+@property(readonly) NSArray *shapes;
 
 - (NSArray *)graphics;
 - (void)addGraphics:(id)collection;

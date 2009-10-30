@@ -36,6 +36,6 @@ extern NSString *const LNDocumentCanvasStorageDidChangeNotification;
 	LNCanvasStorage *_canvasStorage;
 }
 
-- (LNCanvasStorage *)canvasStorage;
+@property(readonly) LNCanvasStorage *canvasStorage;
 
 @end

@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 // Views
 #import "LNCanvasView.h"
 
-@interface LNWindowController : NSWindowController <NSToolbarDelegate>
+@interface LNWindowController : NSWindowController <NSOutlineViewDataSource, NSOutlineViewDelegate, NSToolbarDelegate, NSWindowDelegate>
 {
 	@private
 	IBOutlet NSSegmentedControl *toolsControl;

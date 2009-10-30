@@ -29,22 +29,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 // Controllers
 #import "LNWindowController.h"
 
-// Categories
-#import "NSObjectAdditions.h"
+// Other Sources
+#import "LNFoundationAdditions.h"
 
-// Notifications
 NSString *const LNDocumentCanvasStorageDidChangeNotification = @"LNDocumentCanvasStorageDidChange";
 
 @implementation LNDocument
 
-#pragma mark Instance Methods
+#pragma mark -LNDocument
 
 - (LNCanvasStorage *)canvasStorage
 {
 	return [[_canvasStorage retain] autorelease];
 }
 
-#pragma mark NSDocument
+#pragma mark -NSDocument
 
 - (void)makeWindowControllers
 {
@@ -62,11 +61,11 @@ NSString *const LNDocumentCanvasStorageDidChangeNotification = @"LNDocumentCanva
 {
 	[_canvasStorage release];
 	_canvasStorage = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
-	[self AE_postNotificationName:LNDocumentCanvasStorageDidChangeNotification];
+	[self LN_postNotificationName:LNDocumentCanvasStorageDidChangeNotification];
 	return _canvasStorage != nil;
 }
 
-#pragma mark NSObject
+#pragma mark -NSObject
 
 - (id)init
 {

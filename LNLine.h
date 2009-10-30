@@ -60,11 +60,9 @@ float LNPointDistance(NSPoint p1, NSPoint p2);
 + (NSArray *)chainOfConnectingLines:(NSSet *)aSet;
 
 - (id)initWithStart:(NSPoint)start end:(NSPoint)end;
+@property(assign) NSPoint start;
+@property(assign) NSPoint end;
 
-- (NSPoint)start;
-- (void)setStart:(NSPoint)aPoint;
-- (NSPoint)end;
-- (void)setEnd:(NSPoint)aPoint;
 - (void)offsetBy:(NSSize)aSize;
 
 - (float)angle;

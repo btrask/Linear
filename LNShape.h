@@ -30,17 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 @interface LNShape : LNGraphic <NSCoding, NSCopying>
 {
-	NSMutableArray *_sides;
-	NSArray        *_cachedPoints;
-	NSBezierPath   *_cachedPath;
+	NSArray *_sides;
+	NSArray *_cachedPoints;
+	NSBezierPath *_cachedPath;
 }
 
 - (id)initWithSides:(NSSet *)aSet;
-
-- (NSMutableArray *)sides;
+@property(readonly) NSArray *sides;
+@property(readonly) NSArray *points;
 
 - (void)recache;
-- (NSArray *)points;
 
 - (void)sideWillChange:(NSNotification *)aNotif;
 - (void)sideDidChange:(NSNotification *)aNotif;

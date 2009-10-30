@@ -21,17 +21,48 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
-#define PGCommonRunLoopsMode (NSString *)kCFRunLoopCommonModes
+#import "LNFoundationAdditions.h"
 
-@interface NSObject (AEAdditions)
+@implementation NSObject(LNFoundationAdditions)
 
-- (void)AE_postNotificationName:(NSString *)aName;
-- (void)AE_postNotificationName:(NSString *)aName userInfo:(NSDictionary *)aDict;
+#pragma mark -NSObject(LNFoundationAdditions)
 
-- (void)AE_addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName;
-- (void)AE_removeObserver;
-- (void)AE_removeObserver:(id)observer name:(NSString *)aName;
+- (void)LN_postNotificationName:(NSString *)aName
+{
+	[self LN_postNotificationName:aName userInfo:nil];
+}
+- (void)LN_postNotificationName:(NSString *)aName userInfo:(NSDictionary *)aDict
+{
+	[[NSNotificationCenter defaultCenter] postNotificationName:aName object:self userInfo:aDict];
+}
 
-- (void)AE_performSelector:(SEL)aSelector withObject:(id)anArgument afterDelay:(NSTimeInterval)delay; // Uses PGCommonRunLoopsMode.
+#pragma mark -
+
+- (void)LN_addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName
+{
+	[[NSNotificationCenter defaultCenter] addObserver:observer selector:aSelector name:aName object:self];
+}
+- (void)LN_removeObserver
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+- (void)LN_removeObserver:(id)observer name:(NSString *)aName
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:observer name:aName object:self];
+}
+
+#pragma mark -
+
+- (void)LN_performSelector:(SEL)aSelector withObject:(id)anArgument afterDelay:(NSTimeInterval)delay
+{
+	[self performSelector:aSelector withObject:anArgument afterDelay:delay inModes:[NSArray arrayWithObject:(NSString *)kCFRunLoopCommonModes]];
+}
+
+#pragma mark -NSObject(NSMenuValidation)
+
+- (BOOL)validateMenuItem:(NSMenuItem *)anItem
+{
+	return [self respondsToSelector:[anItem action]];
+}
 
 @end

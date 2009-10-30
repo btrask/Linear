@@ -29,12 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #import "LNLine.h"
 #import "LNShape.h"
 
-// Categories
-#import "NSObjectAdditions.h"
+// Other Sources
+#import "LNFoundationAdditions.h"
 
 @implementation LNWindowController
 
-#pragma mark Instance Methods
+#pragma mark -LNWindowController
 
 - (IBAction)changeTool:(id)sender
 {
@@ -52,11 +52,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 - (void)documentCanvasStorageDidChange:(NSNotification *)aNotif
 {
 	LNCanvasStorage *const old = [canvas canvasStorage], *new = [[self document] canvasStorage];
-	[old AE_removeObserver:self name:LNCanvasStorageDidChangeGraphicsNotification];
-	[old AE_removeObserver:self name:LNCanvasStorageGraphicDidChangeNotification];
+	[old LN_removeObserver:self name:LNCanvasStorageDidChangeGraphicsNotification];
+	[old LN_removeObserver:self name:LNCanvasStorageGraphicDidChangeNotification];
 	[canvas setCanvasStorage:new];
-	[new AE_addObserver:self selector:@selector(storageDidChangeGraphics:) name:LNCanvasStorageDidChangeGraphicsNotification];
-	[new AE_addObserver:self selector:@selector(storageGraphicDidChange:) name:LNCanvasStorageGraphicDidChangeNotification];
+	[new LN_addObserver:self selector:@selector(storageDidChangeGraphics:) name:LNCanvasStorageDidChangeGraphicsNotification];
+	[new LN_addObserver:self selector:@selector(storageGraphicDidChange:) name:LNCanvasStorageGraphicDidChangeNotification];
 	[self storageDidChangeGraphics:nil];
 }
 - (void)storageDidChangeGraphics:(NSNotification *)aNotif
@@ -80,95 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	if([indexes count]) [graphicsOutline scrollRectToVisible:[graphicsOutline frameOfCellAtColumn:0 row:[indexes lastIndex]]];
 }
 
-#pragma mark NSMenuValidation Protocol
-
-- (BOOL)validateMenuItem:(NSMenuItem *)anItem
-{
-	SEL const action = [anItem action];
-	if(@selector(changeTool:) == action) {
-		[anItem setState:([anItem tag] == [canvas tool] ? NSOnState : NSOffState)];
-		return YES;
-	}
-	if(![[canvas selection] count]) {
-		if(@selector(delete:) == action) return NO;
-	}
-	return [self respondsToSelector:action];
-}
-
-#pragma mark NSOutlineViewDataSource Protocol
-
-- (id)outlineView:(NSOutlineView *)outlineView
-      child:(int)index
-      ofItem:(id)item
-{
-	if(!item) {
-		if(index == 0) return [LNLine class];
-		else return [LNShape class];
-	}
-	if([LNLine class] == item) {
-		NSArray *const lines = [[[self document] canvasStorage] lines];
-		return [lines objectAtIndex:[lines count] - 1 - index];
-	} else if([LNShape class] == item) {
-		NSArray *const shapes = [[[self document] canvasStorage] shapes];
-		return [shapes objectAtIndex:[shapes count] - 1 - index];
-	}
-	return nil;
-}
-- (BOOL)outlineView:(NSOutlineView *)outlineView
-        isItemExpandable:(id)item
-{
-	return [item class] == item;
-}
-- (int)outlineView:(NSOutlineView *)outlineView
-       numberOfChildrenOfItem:(id)item
-{
-	if(!item) return 2;
-	if([LNLine class] == item) return [[[[self document] canvasStorage] lines] count];
-	if([LNShape class] == item) return [[[[self document] canvasStorage] shapes] count];
-	return 0;
-}
-- (id)outlineView:(NSOutlineView *)outlineView
-      objectValueForTableColumn:(NSTableColumn *)tableColumn
-      byItem:(id)item
-{
-	if([LNLine class] == item) return NSLocalizedString(@"LINES", @"Outline header for lines group.");
-	if([LNShape class] == item) return NSLocalizedString(@"SHAPES", @"Outline header for shapes group.");
-	return [item displayString];
-}
-
-#pragma mark NSOutlineViewDelegate Protocol
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView
-        shouldSelectItem:(id)item
-{
-	return [LNLine class] != item && [LNShape class] != item;
-}
-
-#pragma mark NSOutlineViewNotifications Protocol
-
-- (void)outlineViewSelectionDidChange:(NSNotification *)notification
-{
-	NSMutableSet *const selection = [NSMutableSet set];
-	NSIndexSet *const indexes = [graphicsOutline selectedRowIndexes];
-	unsigned i = [indexes firstIndex];
-	for(; i != NSNotFound; i = [indexes indexGreaterThanIndex:i]) {
-		id const item = [graphicsOutline itemAtRow:i];
-		if([self outlineView:graphicsOutline shouldSelectItem:item]) [selection addObject:item];
-	}
-	[canvas select:selection byExtendingSelection:NO];
-}
-
-#pragma mark NSWindowNotifications Protocol
-
-- (void)windowDidResignKey:(NSNotification *)notification
-{
-	if(!_optionKeyDown) return;
-	_optionKeyDown = NO;
-	[canvas setTool:_primaryTool];
-	[toolsControl setSelectedSegment:[canvas tool]];
-}
-
-#pragma mark NSWindowController
+#pragma mark -NSWindowController
 
 - (void)windowDidLoad
 {
@@ -184,17 +96,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	[graphicsOutline expandItem:[LNShape class]];
 	[canvas setFrameSize:NSMakeSize(501, 501)];
 	[canvas setCanvasStorage:[[self document] canvasStorage]];
-	[canvas AE_addObserver:self selector:@selector(canvasSelectionDidChange:) name:LNCanvasViewSelectionDidChangeNotification];
+	[canvas LN_addObserver:self selector:@selector(canvasSelectionDidChange:) name:LNCanvasViewSelectionDidChangeNotification];
 }
 - (void)setDocument:(id)aDocument
 {
-	[[self document] AE_removeObserver:self name:LNDocumentCanvasStorageDidChangeNotification];
+	[[self document] LN_removeObserver:self name:LNDocumentCanvasStorageDidChangeNotification];
 	[super setDocument:aDocument];
-	[[self document] AE_addObserver:self selector:@selector(documentCanvasStorageDidChange:) name:LNDocumentCanvasStorageDidChangeNotification];
+	[[self document] LN_addObserver:self selector:@selector(documentCanvasStorageDidChange:) name:LNDocumentCanvasStorageDidChangeNotification];
 	[self documentCanvasStorageDidChange:nil];
 }
 
-#pragma mark NSResponder
+#pragma mark -NSResponder
 
 - (void)flagsChanged:(NSEvent *)anEvent
 {
@@ -210,18 +122,87 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	[toolsControl setSelectedSegment:[canvas tool]];
 }
 
-#pragma mark NSObject
+#pragma mark -NSObject
 
 - (id)init
 {
 	return [super initWithWindowNibName:@"LNDocument"];
 }
 
+#pragma mark -NSObject(NSMenuValidation)
+
+- (BOOL)validateMenuItem:(NSMenuItem *)anItem
+{
+	SEL const action = [anItem action];
+	if(@selector(changeTool:) == action) {
+		[anItem setState:([anItem tag] == [canvas tool] ? NSOnState : NSOffState)];
+		return YES;
+	}
+	if(![[canvas selection] count]) {
+		if(@selector(delete:) == action) return NO;
+	}
+	return [self respondsToSelector:action];
+}
+
+#pragma mark -NSObject(NSOutlineViewNotifications)
+
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification
+{
+	NSMutableSet *const selection = [NSMutableSet set];
+	NSIndexSet *const indexes = [graphicsOutline selectedRowIndexes];
+	unsigned i = [indexes firstIndex];
+	for(; i != NSNotFound; i = [indexes indexGreaterThanIndex:i]) {
+		id const item = [graphicsOutline itemAtRow:i];
+		if([self outlineView:graphicsOutline shouldSelectItem:item]) [selection addObject:item];
+	}
+	[canvas select:selection byExtendingSelection:NO];
+}
+
+#pragma mark -<NSOutlineViewDataSource>
+
+- (id)outlineView:(NSOutlineView *)outlineView child:(int)index ofItem:(id)item
+{
+	if(!item) {
+		if(index == 0) return [LNLine class];
+		else return [LNShape class];
+	}
+	if([LNLine class] == item) {
+		NSArray *const lines = [[[self document] canvasStorage] lines];
+		return [lines objectAtIndex:[lines count] - 1 - index];
+	} else if([LNShape class] == item) {
+		NSArray *const shapes = [[[self document] canvasStorage] shapes];
+		return [shapes objectAtIndex:[shapes count] - 1 - index];
+	}
+	return nil;
+}
+- (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
+{
+	return [item class] == item;
+}
+- (int)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
+{
+	if(!item) return 2;
+	if([LNLine class] == item) return [[[[self document] canvasStorage] lines] count];
+	if([LNShape class] == item) return [[[[self document] canvasStorage] shapes] count];
+	return 0;
+}
+- (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
+{
+	if([LNLine class] == item) return NSLocalizedString(@"LINES", @"Outline header for lines group.");
+	if([LNShape class] == item) return NSLocalizedString(@"SHAPES", @"Outline header for shapes group.");
+	return [item displayString];
+}
+
+#pragma mark -<NSOutlineViewDelegate>
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
+{
+	return [LNLine class] != item && [LNShape class] != item;
+}
+
 #pragma mark -<NSToolbarDelegate>
 
-- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar
-                   itemForItemIdentifier:(NSString *)itemIdentifier
-		   willBeInsertedIntoToolbar:(BOOL)flag
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {
 	NSToolbarItem *const item = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
 	[item setPaletteLabel:NSLocalizedString(@"Tools", @"Tools toolbar item label.")];
@@ -235,6 +216,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [self toolbarDefaultItemIdentifiers:toolbar];
+}
+
+#pragma mark -<NSWindowDelegate>
+
+- (void)windowDidResignKey:(NSNotification *)notification
+{
+	if(!_optionKeyDown) return;
+	_optionKeyDown = NO;
+	[canvas setTool:_primaryTool];
+	[toolsControl setSelectedSegment:[canvas tool]];
 }
 
 @end

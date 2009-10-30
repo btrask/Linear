@@ -23,15 +23,15 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #import "LNGraphic.h"
 
-// Categories
-#import "NSObjectAdditions.h"
+// Other Sources
+#import "LNFoundationAdditions.h"
 
 NSString *const LNGraphicWillChangeNotification = @"LNGraphicWillChange";
 NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 
 @implementation LNGraphic
 
-#pragma mark Class Methods
+#pragma mark +LNGraphic
 
 + (NSBezierPath *)highlightStyleBezierPath:(NSBezierPath *)path
 {
@@ -42,7 +42,7 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 	return highlightPath;
 }
 
-#pragma mark Instance Methods
+#pragma mark -LNGraphic
 
 - (NSColor *)color
 {
@@ -51,13 +51,21 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 - (void)setColor:(NSColor *)aColor
 {
 	if(aColor == _color || [aColor isEqual:_color]) return;
-	[self AE_postNotificationName:LNGraphicWillChangeNotification];
+	[self LN_postNotificationName:LNGraphicWillChangeNotification];
 	[_color release];
 	_color = [aColor copy];
-	[self AE_postNotificationName:LNGraphicDidChangeNotification];
+	[self LN_postNotificationName:LNGraphicDidChangeNotification];
 }
 
-#pragma mark NSCoding Protocol
+#pragma mark -NSObject
+
+- (void)dealloc
+{
+	[_color release];
+	[super dealloc];
+}
+
+#pragma mark -<NSCoding>
 
 - (id)initWithCoder:(NSCoder *)aCoder
 {
@@ -71,21 +79,13 @@ NSString *const LNGraphicDidChangeNotification  = @"LNGraphicDidChange";
 	[aCoder encodeObject:_color forKey:@"Color"];
 }
 
-#pragma mark NSCopying Protocol
+#pragma mark -<NSCopying>
 
 - (id)copyWithZone:(NSZone *)aZone
 {
 	id const dupe = [[[self class] allocWithZone:aZone] init];
 	[dupe setColor:[self color]];
 	return dupe;
-}
-
-#pragma mark NSObject
-
-- (void)dealloc
-{
-	[_color release];
-	[super dealloc];
 }
 
 @end

@@ -59,14 +59,15 @@ extern NSString *const LNCanvasViewSelectionDidChangeNotification;
 
 - (IBAction)orderFrontColorPanel:(id)sender;
 
-- (LNCanvasStorage *)canvasStorage;
-- (void)setCanvasStorage:(LNCanvasStorage *)storage;
+@property(retain) LNCanvasStorage *canvasStorage;
+@property(readonly) NSSet *selection;
+@property(readonly) LNGraphic *selectedGraphic;
+@property(assign) LNCanvasTool tool;
 
 - (void)getGraphic:(out id *)outGraphic linePart:(out LNLinePart *)outPart atPoint:(NSPoint)aPoint;
 - (float)getDistanceToEnd:(out LNLineEnd *)outEnd ofLine:(out LNLine **)outLine closestToPoint:(NSPoint)aPoint excluding:(NSSet *)excludedSet;
 - (BOOL)needsToDrawGraphic:(LNGraphic *)graphic selected:(BOOL)flag;
 
-- (NSSet *)selection;
 - (void)select:(NSSet *)aSet byExtendingSelection:(BOOL)flag;
 - (void)deselect:(NSSet *)aSet;
 - (void)invertSelect:(NSSet *)aSet; // Selects unselected and deselects selected objects in aSet.
@@ -74,9 +75,6 @@ extern NSString *const LNCanvasViewSelectionDidChangeNotification;
 - (void)setPrimarySelection:(id)aGraphic;
 
 - (void)moveSelectionBy:(NSSize)aSize;
-
-- (LNCanvasTool)tool;
-- (void)setTool:(LNCanvasTool)tool;
 
 - (void)storageDidChangeGraphics:(NSNotification *)aNotif;
 - (void)storageGraphicWillChange:(NSNotification *)aNotif;

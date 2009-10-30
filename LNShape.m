@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #import "LNCanvasStorage.h"
 #import "LNLine.h"
 
-// Categories
-#import "NSObjectAdditions.h"
+// Other Sources
+#import "LNFoundationAdditions.h"
 
 @interface LNShape(Private)
 
@@ -38,37 +38,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 @implementation LNShape
 
-#pragma mark Instance Methods
+#pragma mark -LNShape
 
 - (id)initWithSides:(NSSet *)aSet
 {
 	if((self = [self init])) {
-		NSArray *const sides = [LNLine chainOfConnectingLines:aSet];
-		if(![sides count]) {
+		_sides = [[LNLine chainOfConnectingLines:aSet] copy];
+		if(![_sides count]) {
 			[self release];
 			return nil;
 		}
-		[_sides addObjectsFromArray:sides];
 		[self _init];
+		[self setColor:[NSColor colorWithDeviceWhite:0.5f alpha:1.0f]];
 	}
 	return self;
 }
-
-#pragma mark -
-
 - (NSMutableArray *)sides
 {
 	return [[_sides retain] autorelease];
-}
-
-#pragma mark -
-
-- (void)recache
-{
-	[_cachedPoints release];
-	_cachedPoints = nil;
-	[_cachedPath release];
-	_cachedPath = nil;
 }
 - (NSArray *)points
 {
@@ -92,14 +79,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #pragma mark -
 
+- (void)recache
+{
+	[_cachedPoints release];
+	_cachedPoints = nil;
+	[_cachedPath release];
+	_cachedPath = nil;
+}
+
+#pragma mark -
+
 - (void)sideWillChange:(NSNotification *)aNotif
 {
-	[self AE_postNotificationName:LNGraphicWillChangeNotification];
+	[self LN_postNotificationName:LNGraphicWillChangeNotification];
 }
 - (void)sideDidChange:(NSNotification *)aNotif
 {
 	[self recache];
-	[self AE_postNotificationName:LNGraphicDidChangeNotification];
+	[self LN_postNotificationName:LNGraphicDidChangeNotification];
 }
 
 #pragma mark -LNShape(Private)
@@ -107,12 +104,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 - (void)_init
 {
 	for(LNLine *const line in _sides) {
-		[line AE_addObserver:self selector:@selector(sideWillChange:) name:LNGraphicWillChangeNotification];
-		[line AE_addObserver:self selector:@selector(sideDidChange:) name:LNGraphicDidChangeNotification];
+		[line LN_addObserver:self selector:@selector(sideWillChange:) name:LNGraphicWillChangeNotification];
+		[line LN_addObserver:self selector:@selector(sideDidChange:) name:LNGraphicDidChangeNotification];
 	}
 }
 
-#pragma mark LNGraphicSubclassResponsibility Protocol
+#pragma mark -LNGraphic(LNGraphicSubclassResponsibility)
 
 - (NSBezierPath *)bezierPath
 {
@@ -145,7 +142,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	return c == 1 ? NSLocalizedString(@"Shape with 1 side", @"Shape display string for shapes with only 1 side.") : [NSString stringWithFormat:NSLocalizedString(@"Shape with %u sides", @"Shape display string for shapes with any number of sides besides 1. %u is replaced with the number."), c];
 }
 
-#pragma mark NSCoding Protocol
+#pragma mark -NSObject
+
+- (id)init
+{
+	return [self initWithSides:[NSSet set]];
+}
+- (void)dealloc
+{
+	[self LN_removeObserver];
+	[_sides release];
+	[_cachedPoints release];
+	[_cachedPath release];
+	[super dealloc];
+}
+
+#pragma mark -
+
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"<%@ %p: %u sides>", [self class], self, [_sides count]];
+}
+
+#pragma mark -<NSCoding>
 
 - (id)initWithCoder:(NSCoder *)aCoder
 {
@@ -163,37 +182,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	[aCoder encodeObject:_sides forKey:@"Sides"];
 }
 
-#pragma mark NSCopying Protocol
+#pragma mark -<NSCopying>
 
 - (id)copyWithZone:(NSZone *)aZone
 {
 	return [self retain];
-}
-
-#pragma mark NSObject
-
-- (id)init
-{
-	if((self = [super init])) {
-		_sides = [[NSMutableArray alloc] init];
-		[self setColor:[NSColor colorWithDeviceWhite:0.5f alpha:1.0f]];
-	}
-	return self;
-}
-- (void)dealloc
-{
-	[self AE_removeObserver];
-	[_sides release];
-	[_cachedPoints release];
-	[_cachedPath release];
-	[super dealloc];
-}
-
-#pragma mark -
-
-- (NSString *)description
-{
-	return [NSString stringWithFormat:@"<%@ %p: %u sides>", [self class], self, [_sides count]];
 }
 
 @end

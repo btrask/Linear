@@ -32,12 +32,11 @@ extern NSString *const LNGraphicDidChangeNotification;
 
 + (NSBezierPath *)highlightStyleBezierPath:(NSBezierPath *)path;
 
-- (NSColor *)color;
-- (void)setColor:(NSColor *)aColor;
+@property(copy) NSColor *color;
 
 @end
 
-@interface LNGraphic (LNGraphicSubclassResponsibility)
+@interface LNGraphic(LNGraphicSubclassResponsibility)
 
 - (NSBezierPath *)bezierPath;
 - (NSRect)frame;

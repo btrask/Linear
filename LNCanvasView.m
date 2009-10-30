@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #import "LNGraphic.h"
 #import "LNShape.h"
 
-// Categories
-#import "NSObjectAdditions.h"
+// Other Sources
+#import "LNFoundationAdditions.h"
 
 NSString *const LNCanvasViewSelectionDidChangeNotification = @"LNCanvasViewSelectionDidChange";
 
@@ -44,14 +44,14 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 @implementation LNCanvasView
 
-#pragma mark Class Methods
+#pragma mark +NSObject
 
 + (void)initialize
 {
 	[NSColor setIgnoresAlpha:NO];
 }
 
-#pragma mark Instance Methods
+#pragma mark -LNCanvasView
 
 /*- (IBAction)copy:(id)sender
 {
@@ -141,22 +141,37 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 {
 	if(storage == _canvasStorage) return;
 	[self deselectAll:self];
-	[_canvasStorage AE_removeObserver:self name:LNCanvasStorageDidChangeGraphicsNotification];
-	[_canvasStorage AE_removeObserver:self name:LNCanvasStorageGraphicWillChangeNotification];
-	[_canvasStorage AE_removeObserver:self name:LNCanvasStorageGraphicDidChangeNotification];
+	[_canvasStorage LN_removeObserver:self name:LNCanvasStorageDidChangeGraphicsNotification];
+	[_canvasStorage LN_removeObserver:self name:LNCanvasStorageGraphicWillChangeNotification];
+	[_canvasStorage LN_removeObserver:self name:LNCanvasStorageGraphicDidChangeNotification];
 	[_canvasStorage release];
 	_canvasStorage = [storage retain];
+	_canvasStorage.canvasView = self;
 	[self setNeedsDisplay:YES];
-	[_canvasStorage AE_addObserver:self selector:@selector(storageDidChangeGraphics:) name:LNCanvasStorageDidChangeGraphicsNotification];
-	[_canvasStorage AE_addObserver:self selector:@selector(storageGraphicWillChange:) name:LNCanvasStorageGraphicWillChangeNotification];
-	[_canvasStorage AE_addObserver:self selector:@selector(storageGraphicDidChange:) name:LNCanvasStorageGraphicDidChangeNotification];
+	[_canvasStorage LN_addObserver:self selector:@selector(storageDidChangeGraphics:) name:LNCanvasStorageDidChangeGraphicsNotification];
+	[_canvasStorage LN_addObserver:self selector:@selector(storageGraphicWillChange:) name:LNCanvasStorageGraphicWillChangeNotification];
+	[_canvasStorage LN_addObserver:self selector:@selector(storageGraphicDidChange:) name:LNCanvasStorageGraphicDidChangeNotification];
 }
+- (NSSet *)selection
+{
+	return [[_selection copy] autorelease];
+}
+- (LNGraphic *)selectedGraphic
+{
+	LNGraphic *result = nil, *selected;
+	NSEnumerator *const selectedEnum = [_selection objectEnumerator];
+	while((selected = [selectedEnum nextObject])) {
+		if(![selectedEnum isKindOfClass:[LNGraphic class]]) continue;
+		if(result) return nil;
+		result = selected;
+	}
+	return result;
+}
+@synthesize tool = _tool;
 
 #pragma mark -
 
-- (void)getGraphic:(out id *)outGraphic
-        linePart:(out LNLinePart *)outPart
-	atPoint:(NSPoint)aPoint
+- (void)getGraphic:(out id *)outGraphic linePart:(out LNLinePart *)outPart atPoint:(NSPoint)aPoint
 {
 	id graphic = [self primarySelection];
 	if([graphic isKindOfClass:[LNLine class]]) {
@@ -184,10 +199,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	if(outGraphic) *outGraphic = nil;
 	if(outPart) *outPart = LNNoPart;
 }
-- (float)getDistanceToEnd:(out LNLineEnd *)outEnd
-         ofLine:(out LNLine **)outLine
-	 closestToPoint:(NSPoint)aPoint
-	 excluding:(NSSet *)excludedSet
+- (float)getDistanceToEnd:(out LNLineEnd *)outEnd ofLine:(out LNLine **)outLine closestToPoint:(NSPoint)aPoint excluding:(NSSet *)excludedSet
 {
 	float dist = FLT_MAX;
 	if(outLine) *outLine = nil;
@@ -210,8 +222,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	}
 	return dist;
 }
-- (BOOL)needsToDrawGraphic:(LNGraphic *)graphic
-        selected:(BOOL)flag
+- (BOOL)needsToDrawGraphic:(LNGraphic *)graphic selected:(BOOL)flag
 {
 	NSRect frame = [graphic frame];
 	if(NSIsEmptyRect(frame)) return NO;
@@ -221,23 +232,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 #pragma mark -
 
-- (NSSet *)selection
-{
-	return [[_selection copy] autorelease];
-}
-- (LNGraphic *)selectedGraphic
-{
-	LNGraphic *result = nil, *selected;
-	NSEnumerator *const selectedEnum = [_selection objectEnumerator];
-	while((selected = [selectedEnum nextObject])) {
-		if(![selectedEnum isKindOfClass:[LNGraphic class]]) continue;
-		if(result) return nil;
-		result = selected;
-	}
-	return result;
-}
-- (void)select:(NSSet *)aSet
-        byExtendingSelection:(BOOL)flag
+- (void)select:(NSSet *)aSet byExtendingSelection:(BOOL)flag
 {
 	NSMutableSet *const realSet = [NSMutableSet set];
 //	[realSet unionSet:[];
@@ -249,7 +244,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	if([_selection count] == 1) [[NSColorPanel sharedColorPanel] setColor:[[_selection anyObject] color]];
 	if(![_selection containsObject:[self primarySelection]]) [self setPrimarySelection:nil];
 	[self setNeedsDisplay:YES];
-	[self AE_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
+	[self LN_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
 }
 - (void)deselect:(NSSet *)aSet
 {
@@ -258,7 +253,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	if([_selection count] == 1) [[NSColorPanel sharedColorPanel] setColor:[[_selection anyObject] color]];
 	if([aSet containsObject:[self primarySelection]]) [self setPrimarySelection:nil];
 	[self setNeedsDisplay:YES];
-	[self AE_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
+	[self LN_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
 }
 - (void)invertSelect:(NSSet *)aSet
 {
@@ -270,7 +265,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	}
 	if(![_selection containsObject:[self primarySelection]]) [self setPrimarySelection:nil];
 	[self setNeedsDisplay:YES];
-	[self AE_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
+	[self LN_postNotificationName:LNCanvasViewSelectionDidChangeNotification];
 }
 - (id)primarySelection
 {
@@ -291,17 +286,6 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	id graphic;
 	NSEnumerator *const graphicEnum = [[self selection] objectEnumerator];
 	while((graphic = [graphicEnum nextObject])) if([graphic isKindOfClass:[LNLine class]]) [graphic offsetBy:aSize];
-}
-
-#pragma mark -
-
-- (LNCanvasTool)tool
-{
-	return _tool;
-}
-- (void)setTool:(LNCanvasTool)tool
-{
-	_tool = tool;
 }
 
 #pragma mark -
@@ -330,49 +314,21 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	if([[self selection] count]) [self setNeedsDisplay:YES];
 }
 
-#pragma mark Private Protocol
+#pragma mark -LNCanvasView(Private)
 
 - (void)_setSelectionLine:(LNLine *)line
 {
 	if(line == _selectionLine) return;
-	[_selectionLine AE_removeObserver:self name:LNGraphicWillChangeNotification];
-	[_selectionLine AE_removeObserver:self name:LNGraphicDidChangeNotification];
+	[_selectionLine LN_removeObserver:self name:LNGraphicWillChangeNotification];
+	[_selectionLine LN_removeObserver:self name:LNGraphicDidChangeNotification];
 	[_selectionLine release];
 	_selectionLine = [line retain];
-	[_selectionLine AE_addObserver:self selector:@selector(graphicWillChange:) name:LNGraphicWillChangeNotification];
-	[_selectionLine AE_addObserver:self selector:@selector(graphicDidChange:) name:LNGraphicDidChangeNotification];
+	[_selectionLine LN_addObserver:self selector:@selector(graphicWillChange:) name:LNGraphicWillChangeNotification];
+	[_selectionLine LN_addObserver:self selector:@selector(graphicDidChange:) name:LNGraphicDidChangeNotification];
 	[self setNeedsDisplay:YES];
 }
 
-#pragma mark NSColorPanelResponderMethod Protocol
-
-- (void)changeColor:(id)sender
-{
-	[[self selection] makeObjectsPerformSelector:@selector(setColor:) withObject:[sender color]];
-}
-
-#pragma mark NSMenuValidation Protocol
-
-- (BOOL)validateMenuItem:(NSMenuItem *)anItem
-{
-	SEL const action = [anItem action];
-	if(![[self selection] count]) {
-		if(@selector(copy:) == action) return NO;
-		if(@selector(deselectAll:) == action) return NO;
-	}
-	if(@selector(paste:) == action && ![[[NSPasteboard generalPasteboard] types] containsObject:LNCanvasGraphicsPboardType]) return NO;
-	if(![self primarySelection] || [[self selection] count] < 2) {
-		if(@selector(dividePrimary:) == action) return NO;
-		if(@selector(divideByPrimary:) == action) return NO;
-		if(@selector(extend:) == action) return NO;
-	}
-	if([[self selection] count] < 3) {
-		if(@selector(makeShapeWithSelection:) == action) return NO;
-	}
-	return [self respondsToSelector:action];
-}
-
-#pragma mark NSView
+#pragma mark -NSView
 
 - (id)initWithFrame:(NSRect)aRect
 {
@@ -443,14 +399,14 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow
 {
-	[[self window] AE_removeObserver:self name:NSWindowDidBecomeKeyNotification];
-	[[self window] AE_removeObserver:self name:NSWindowDidResignKeyNotification];
-	[newWindow AE_addObserver:self selector:@selector(windowWillChangeKey:) name:NSWindowDidBecomeKeyNotification];
-	[newWindow AE_addObserver:self selector:@selector(windowWillChangeKey:) name:NSWindowDidResignKeyNotification];
+	[[self window] LN_removeObserver:self name:NSWindowDidBecomeKeyNotification];
+	[[self window] LN_removeObserver:self name:NSWindowDidResignKeyNotification];
+	[newWindow LN_addObserver:self selector:@selector(windowWillChangeKey:) name:NSWindowDidBecomeKeyNotification];
+	[newWindow LN_addObserver:self selector:@selector(windowWillChangeKey:) name:NSWindowDidResignKeyNotification];
 	[self windowWillChangeKey:nil];
 }
 
-#pragma mark NSResponder
+#pragma mark -NSResponder
 
 - (void)mouseDown:(NSEvent *)firstEvent
 {
@@ -567,16 +523,44 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	if(![[NSApp mainMenu] performKeyEquivalent:anEvent]) [super keyDown:anEvent]; // Make sure our one-key menu shortcuts get a shot.
 }
 
-#pragma mark NSObject
+#pragma mark -NSObject
 
 - (void)dealloc
 {
-	[self AE_removeObserver];
+	[self LN_removeObserver];
 	[_canvasStorage release];
 	[_selection release];
 	[_primarySelection release];
 	[_selectionLine release];
 	[super dealloc];
+}
+
+#pragma mark -NSObject(NSColorPanelResponderMethod)
+
+- (void)changeColor:(id)sender
+{
+	[[self selection] makeObjectsPerformSelector:@selector(setColor:) withObject:[sender color]];
+}
+
+#pragma mark -NSObject(NSMenuValidation)
+
+- (BOOL)validateMenuItem:(NSMenuItem *)anItem
+{
+	SEL const action = [anItem action];
+	if(![[self selection] count]) {
+		if(@selector(copy:) == action) return NO;
+		if(@selector(deselectAll:) == action) return NO;
+	}
+	if(@selector(paste:) == action && ![[[NSPasteboard generalPasteboard] types] containsObject:LNCanvasGraphicsPboardType]) return NO;
+	if(![self primarySelection] || [[self selection] count] < 2) {
+		if(@selector(dividePrimary:) == action) return NO;
+		if(@selector(divideByPrimary:) == action) return NO;
+		if(@selector(extend:) == action) return NO;
+	}
+	if([[self selection] count] < 3) {
+		if(@selector(makeShapeWithSelection:) == action) return NO;
+	}
+	return [self respondsToSelector:action];
 }
 
 @end
