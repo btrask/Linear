@@ -83,6 +83,7 @@ NSString *const LNCanvasStorageGraphicKey                    = @"LNCanvasStorage
 	NSArray *const old = [[collection objectEnumerator] allObjects];
 	[_lines removeObjectsInArray:old];
 	[_shapes removeObjectsInArray:old];
+	[[self undo] addGraphics:collection];
 	[self LN_postNotificationName:LNCanvasStorageDidChangeGraphicsNotification userInfo:[NSDictionary dictionaryWithObject:[NSSet setWithArray:old] forKey:LNCanvasStorageGraphicsRemovedKey]];
 }
 
