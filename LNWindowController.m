@@ -151,7 +151,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	NSMutableSet *const selection = [NSMutableSet set];
 	NSIndexSet *const indexes = [graphicsOutline selectedRowIndexes];
 	unsigned i = [indexes firstIndex];
-	for(; i != NSNotFound; i = [indexes indexGreaterThanIndex:i]) [selection addObject:[graphicsOutline itemAtRow:i]];
+	for(; i != NSNotFound; i = [indexes indexGreaterThanIndex:i]) {
+		id const item = [graphicsOutline itemAtRow:i];
+		if([self outlineView:graphicsOutline shouldSelectItem:item]) [selection addObject:item];
+	}
 	[canvas select:selection byExtendingSelection:NO];
 }
 
