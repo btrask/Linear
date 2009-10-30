@@ -37,11 +37,7 @@ enum {
 };
 typedef int LNLinePart;
 
-enum {
-	LNEndEnd   = NO,
-	LNStartEnd = YES
-};
-typedef BOOL LNLineEnd; // You can use logical operations on LNLineEnd, like ! to get the opposite. Note that all non-zero values mean LNStartEnd.
+typedef BOOL LNLineEnd;
 
 float LNRadiansToDegrees(float rad);
 float LNDegreesToRadians(float deg);
@@ -66,11 +62,11 @@ float LNPointDistance(NSPoint p1, NSPoint p2);
 - (void)offsetBy:(NSSize)aSize;
 
 - (float)angle;
-- (void)setAngle:(float)aFloat ofEnd:(LNLineEnd)anEnd; // Moves anEnd.
+- (void)setAngle:(float)aFloat ofEnd:(LNLineEnd)end;
 - (float)length;
-- (void)setLength:(float)aFloat ofEnd:(LNLineEnd)anEnd; // Moves anEnd.
-- (NSPoint)locationOfEnd:(LNLineEnd)anEnd;
-- (void)setLocation:(NSPoint)aPoint ofEnd:(LNLineEnd)anEnd;
+- (void)setLength:(float)aFloat ofEnd:(LNLineEnd)end;
+- (NSPoint)locationOfEnd:(LNLineEnd)end;
+- (void)setLocation:(NSPoint)aPoint ofEnd:(LNLineEnd)end;
 
 - (BOOL)isEqualToLine:(LNLine *)line; // Compares start and end points. -isEqual: compares addresses.
 

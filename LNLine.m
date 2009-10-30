@@ -114,30 +114,30 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 {
 	return LNPointAngle(_p1, _p2);
 }
-- (void)setAngle:(float)aFloat ofEnd:(LNLineEnd)anEnd
+- (void)setAngle:(float)aFloat ofEnd:(LNLineEnd)end
 {
 	float const l = [self length];
-	if(LNEndEnd == anEnd) [self _setStart:_p1 end:NSMakePoint(_p1.x + cosf(LNDegreesToRadians(aFloat)) * l, _p1.y + sinf(LNDegreesToRadians(aFloat)) * l)];
+	if(end) [self _setStart:_p1 end:NSMakePoint(_p1.x + cosf(LNDegreesToRadians(aFloat)) * l, _p1.y + sinf(LNDegreesToRadians(aFloat)) * l)];
 	else [self _setStart:NSMakePoint(_p2.x + cosf(LNDegreesToRadians(aFloat)) * l, _p2.y + sinf(LNDegreesToRadians(aFloat)) * l) end:_p2];
 }
 - (float)length
 {
 	return LNPointDistance(_p1, _p2);
 }
-- (void)setLength:(float)aFloat ofEnd:(LNLineEnd)anEnd
+- (void)setLength:(float)aFloat ofEnd:(LNLineEnd)end
 {
 	float const a = atan2f(_p2.y - _p1.y, _p2.x - _p1.x);
-	if(LNEndEnd == anEnd) [self _setStart:_p1 end:NSMakePoint(_p1.x + cosf(a) * aFloat, _p1.y + sinf(a) * aFloat)];
+	if(end) [self _setStart:_p1 end:NSMakePoint(_p1.x + cosf(a) * aFloat, _p1.y + sinf(a) * aFloat)];
 	else [self _setStart:NSMakePoint(_p2.x + cosf(a + pi) * aFloat, _p2.y + sinf(a + pi) * aFloat) end:_p2];
 }
-- (NSPoint)locationOfEnd:(LNLineEnd)anEnd
+- (NSPoint)locationOfEnd:(LNLineEnd)end
 {
-	if(LNEndEnd == anEnd) return _p2;
+	if(end) return _p2;
 	return _p1;
 }
-- (void)setLocation:(NSPoint)aPoint ofEnd:(LNLineEnd)anEnd
+- (void)setLocation:(NSPoint)aPoint ofEnd:(LNLineEnd)end
 {
-	if(LNEndEnd == anEnd) [self setEnd:aPoint];
+	if(end) [self setEnd:aPoint];
 	else [self setStart:aPoint];
 }
 
@@ -223,7 +223,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 - (void)extendToClosestLineInSet:(NSSet *)lines
 {
 	float dist = FLT_MAX;
-	LNLineEnd direction;
+	LNLineEnd end;
 	NSPoint closest;
 	BOOL foundSomething = NO;
 	for(LNLine *const line in lines) {
@@ -234,24 +234,24 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 		if(!denom) continue;
 		float const uA = numeA / denom;
 		float const uB = numeB / denom;
-		if(uB < 0 || uB > 1) continue;
+		if(uB < 0.0f || uB > 1.0f) continue;
 		NSPoint const intersection = NSMakePoint(_p1.x + uA * (_p2.x - _p1.x), _p1.y + uA * (_p2.y - _p1.y));
 		float newDist;
-		float newDirection;
+		LNLineEnd newEnd;
 		if(uA < -0.01) { // Insist on moving a little for it to count.
 			newDist = LNPointDistance(intersection, _p1);
-			newDirection = LNStartEnd;
+			newEnd = NO;
 		} else if(uA > 1.01) {
 			newDist = LNPointDistance(intersection, _p2);
-			newDirection = LNEndEnd;
+			newEnd = YES;
 		} else continue;
 		if(newDist >= dist) continue;
 		dist = newDist;
-		direction = newDirection;
+		end = newEnd;
 		closest = intersection;
 		foundSomething = YES;
 	}
-	if(foundSomething) [self setLocation:closest ofEnd:direction];
+	if(foundSomething) [self setLocation:closest ofEnd:end];
 }
 
 #pragma mark -LNLine(Private)

@@ -204,12 +204,12 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 		float const endDist = LNPointDistance([(LNLine *)graphic end], aPoint);
 		if(startDist < dist) {
 			dist = startDist;
-			if(outEnd) *outEnd = LNStartEnd;
+			if(outEnd) *outEnd = NO;
 			if(outLine) *outLine = (LNLine *)graphic;
 		}
 		if(endDist < dist) {
 			dist = endDist;
-			if(outEnd) *outEnd = LNEndEnd;
+			if(outEnd) *outEnd = YES;
 			if(outLine) *outLine = (LNLine *)graphic;
 		}
 	}
@@ -456,12 +456,12 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 				}
 				break;
 			case LNExtendTool:
-				if(LNStartPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([clickedGraphic end], latestPoint), 0.01) ofEnd:LNStartEnd];
-				else if(LNEndPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([(LNLine *)clickedGraphic start], latestPoint), 0.01) ofEnd:LNEndEnd];
+				if(LNStartPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([clickedGraphic end], latestPoint), 0.01) ofEnd:NO];
+				else if(LNEndPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([(LNLine *)clickedGraphic start], latestPoint), 0.01) ofEnd:YES];
 				break;
 			case LNRotateTool:
-				if(LNStartPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([clickedGraphic end], latestPoint) ofEnd:LNStartEnd];
-				else if(LNEndPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([(LNLine *)clickedGraphic start], latestPoint) ofEnd:LNEndEnd];
+				if(LNStartPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([clickedGraphic end], latestPoint) ofEnd:YES];
+				else if(LNEndPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([(LNLine *)clickedGraphic start], latestPoint) ofEnd:NO];
 				break;
 		}
 		if([latestEvent type] == NSFlagsChanged && !caughtFlagsChanged) [ignoredEvents addObject:latestEvent];
