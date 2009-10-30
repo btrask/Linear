@@ -460,8 +460,8 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 				else if(LNEndPart == clickedPart) [clickedGraphic setLength:MAX(LNPointDistance([(LNLine *)clickedGraphic start], latestPoint), 0.01) ofEnd:YES];
 				break;
 			case LNRotateTool:
-				if(LNStartPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([clickedGraphic end], latestPoint) ofEnd:YES];
-				else if(LNEndPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([(LNLine *)clickedGraphic start], latestPoint) ofEnd:NO];
+				if(LNStartPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([clickedGraphic end], latestPoint) ofEnd:NO];
+				else if(LNEndPart == clickedPart) [clickedGraphic setAngle:LNPointAngle([(LNLine *)clickedGraphic start], latestPoint) ofEnd:YES];
 				break;
 		}
 		if([latestEvent type] == NSFlagsChanged && !caughtFlagsChanged) [ignoredEvents addObject:latestEvent];
