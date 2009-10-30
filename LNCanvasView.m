@@ -53,26 +53,24 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 #pragma mark -LNCanvasView
 
-/*- (IBAction)copy:(id)sender
+- (IBAction)copy:(id)sender
 {
-	// FIXME: -[LNCanvasStorage graphicsInSet:]?
 	if(![[self selection] count]) return NSBeep();
 	NSPasteboard *const pboard = [NSPasteboard generalPasteboard];
 	[pboard declareTypes:[NSArray arrayWithObject:LNCanvasGraphicsPboardType] owner:nil];
 	[pboard setData:[NSKeyedArchiver archivedDataWithRootObject:[self selection]] forType:LNCanvasGraphicsPboardType];
-}*/
-/*- (IBAction)paste:(id)sender
+}
+- (IBAction)paste:(id)sender
 {
-	// FIXME: -[LNCanvasStorage addGraphics:]?
 	NSPasteboard *const pboard = [NSPasteboard generalPasteboard];
 	if(![[pboard types] containsObject:LNCanvasGraphicsPboardType]) return NSBeep();
 	NSSet *const graphics = [NSKeyedUnarchiver unarchiveObjectWithData:[pboard dataForType:LNCanvasGraphicsPboardType]];
 	if(![graphics count]) return;
-	[[self canvasStorage] addGraphics:[graphics allObjects]];
+	[[self canvasStorage] addGraphics:graphics];
 	[self deselectAll:self];
-	[self select:graphics];
+	[self select:graphics byExtendingSelection:NO];
 	[self moveSelectionBy:NSMakeSize(15, -15)];
-}*/
+}
 - (IBAction)selectAll:(id)sender
 {
 	[self select:[NSSet setWithArray:[[self canvasStorage] graphics]] byExtendingSelection:NO];
