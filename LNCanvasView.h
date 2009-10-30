@@ -61,7 +61,6 @@ extern NSString *const LNCanvasViewSelectionDidChangeNotification;
 
 @property(retain) LNCanvasStorage *canvasStorage;
 @property(readonly) NSSet *selection;
-@property(readonly) LNGraphic *selectedGraphic;
 @property(assign) LNCanvasTool tool;
 
 - (void)getGraphic:(out id *)outGraphic linePart:(out LNLinePart *)outPart atPoint:(NSPoint)aPoint;

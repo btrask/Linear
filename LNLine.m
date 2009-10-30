@@ -211,17 +211,13 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 - (NSSet *)linesByDividingLines:(NSSet *)lines
 {
 	NSMutableSet *const results = [NSMutableSet set];
-	LNLine *line;
-	NSEnumerator *const lineEnum = [lines objectEnumerator];
-	while((line = [lineEnum nextObject])) if([line isKindOfClass:[LNLine class]]) [results unionSet:[line linesByDividingAtLine:self]];
+	for(LNLine *const line in lines) if([line isKindOfClass:[LNLine class]]) [results unionSet:[line linesByDividingAtLine:self]];
 	return results;
 }
 - (NSSet *)linesByDividingAtLines:(NSSet *)lines
 {
 	NSSet *results = [NSSet setWithObject:self];
-	LNLine *denom;
-	NSEnumerator *const denomEnum = [lines objectEnumerator];
-	while((denom = [denomEnum nextObject])) if([denom isKindOfClass:[LNLine class]]) results = [denom linesByDividingLines:results];
+	for(LNLine *const denom in lines) if([denom isKindOfClass:[LNLine class]]) results = [denom linesByDividingLines:results];
 	return results;
 }
 - (void)extendToClosestLineInSet:(NSSet *)lines
@@ -230,9 +226,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	LNLineEnd direction;
 	NSPoint closest;
 	BOOL foundSomething = NO;
-	LNLine *line;
-	NSEnumerator *const lineEnum = [lines objectEnumerator];
-	while((line = [lineEnum nextObject])) {
+	for(LNLine *const line in lines) {
 		NSPoint const op1 = [line start], op2 = [line end];
 		float const numeA = ((op2.x - op1.x) * (_p1.y - op1.y)) - ((op2.y - op1.y) * (_p1.x - op1.x));
 		float const numeB = ((_p2.x - _p1.x) * (_p1.y - op1.y)) - ((_p2.y - _p1.y) * (_p1.x - op1.x));
@@ -277,9 +271,7 @@ float LNPointDistance(NSPoint p1, NSPoint p2)
 	NSMutableSet *const remainingLines = [[aSet mutableCopy] autorelease];
 	[remainingLines removeObject:self];
 	if(![remainingLines count]) return [self getIntersection:NULL withLine:lastLine] ? [NSArray arrayWithObject:self] : nil;
-	LNLine *line;
-	NSEnumerator *const lineEnum = [remainingLines objectEnumerator];
-	while((line = [lineEnum nextObject])) {
+	for(LNLine *const line in remainingLines) {
 		if(![self getIntersection:NULL withLine:line]) continue;
 		NSArray *const chain = [line _chainOfConnectingLines:remainingLines endWith:lastLine];
 		if(chain) return [chain arrayByAddingObject:self];

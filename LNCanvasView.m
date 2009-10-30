@@ -113,9 +113,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 - (IBAction)makeShapeWithSelection:(id)sender
 {
 	NSMutableSet *const selectedLines = [NSMutableSet set];
-	id graphic;
-	NSEnumerator *const selectionEnum = [[self selection] objectEnumerator];
-	while((graphic = [selectionEnum nextObject])) if([graphic isKindOfClass:[LNLine class]]) [selectedLines addObject:graphic];
+	for(id const graphic in [self selection]) if([graphic isKindOfClass:[LNLine class]]) [selectedLines addObject:graphic];
 	LNShape *const shape = [[[LNShape alloc] initWithSides:selectedLines] autorelease];
 	if(!shape) return;
 	[[self canvasStorage] addGraphics:[NSSet setWithObject:shape]];
@@ -156,17 +154,6 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 {
 	return [[_selection copy] autorelease];
 }
-- (LNGraphic *)selectedGraphic
-{
-	LNGraphic *result = nil, *selected;
-	NSEnumerator *const selectedEnum = [_selection objectEnumerator];
-	while((selected = [selectedEnum nextObject])) {
-		if(![selectedEnum isKindOfClass:[LNGraphic class]]) continue;
-		if(result) return nil;
-		result = selected;
-	}
-	return result;
-}
 @synthesize tool = _tool;
 
 #pragma mark -
@@ -185,8 +172,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 			return;
 		}
 	}
-	NSEnumerator *const graphicEnum = [[[self canvasStorage] graphics] reverseObjectEnumerator];
-	while((graphic = [graphicEnum nextObject])) {
+	for(graphic in [[self canvasStorage] graphics]) {
 		if([graphic isKindOfClass:[LNLine class]]) {
 			if([graphic distanceToPoint:aPoint] > 4) continue;
 		} else if([graphic isKindOfClass:[LNShape class]]) {
@@ -203,9 +189,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 {
 	float dist = FLT_MAX;
 	if(outLine) *outLine = nil;
-	id graphic;
-	NSEnumerator *const graphicEnum = [[[self canvasStorage] graphics] objectEnumerator];
-	while((graphic = [graphicEnum nextObject])) {
+	for(id const graphic in [[self canvasStorage] graphics]) {
 		if(![graphic isKindOfClass:[LNLine class]] || [excludedSet containsObject:graphic]) continue;
 		float const startDist = LNPointDistance([(LNLine *)graphic start], aPoint);
 		float const endDist = LNPointDistance([graphic end], aPoint);
@@ -257,9 +241,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 }
 - (void)invertSelect:(NSSet *)aSet
 {
-	id graphic;
-	NSEnumerator *const graphicEnum = [aSet objectEnumerator];
-	while((graphic = [graphicEnum nextObject])) {
+	for(id const graphic in aSet) {
 		if([_selection containsObject:graphic]) [_selection removeObject:graphic];
 		else [_selection addObject:graphic];
 	}
@@ -283,9 +265,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 - (void)moveSelectionBy:(NSSize)aSize
 {
-	id graphic;
-	NSEnumerator *const graphicEnum = [[self selection] objectEnumerator];
-	while((graphic = [graphicEnum nextObject])) if([graphic isKindOfClass:[LNLine class]]) [graphic offsetBy:aSize];
+	for(id const graphic in [self selection]) if([graphic isKindOfClass:[LNLine class]]) [graphic offsetBy:aSize];
 }
 
 #pragma mark -
@@ -351,16 +331,13 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	[transform translateXBy:0.5 yBy:-0.5];
 	[transform concat];
 
-	LNGraphic *graphic;
-	NSEnumerator *const shapeEnum = [[[self canvasStorage] graphics] objectEnumerator];
-	while((graphic = [shapeEnum nextObject])) {
+	for(LNGraphic *const graphic in [[self canvasStorage] graphics]) {
 		if([graphic isKindOfClass:[LNShape class]] && [self needsToDrawGraphic:graphic selected:NO]) [graphic draw];
 	}
 
 	[[([[self window] firstResponder] == self && [[self window] isKeyWindow] ? [NSColor alternateSelectedControlColor] : [NSColor grayColor]) colorWithAlphaComponent:0.5] set];
 	NSBezierPath *const highlightPath = [LNGraphic highlightStyleBezierPath:nil];
-	NSEnumerator *const selectedLineEnum = [[self selection] objectEnumerator];
-	while((graphic = [selectedLineEnum nextObject])) {
+	for(LNGraphic *const graphic in [self selection]) {
 		if(![self needsToDrawGraphic:graphic selected:YES]) continue;
 		if([graphic shouldFlattenHighlight]) [highlightPath appendBezierPath:[graphic bezierPath]];
 		else [[LNGraphic highlightStyleBezierPath:[graphic bezierPath]] stroke];
@@ -368,8 +345,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	[highlightPath stroke];
 	if(_selectionLine && [self needsToDrawGraphic:_selectionLine selected:YES]) [[LNGraphic highlightStyleBezierPath:[_selectionLine bezierPath]] stroke];
 
-	NSEnumerator *const lineEnum = [[[self canvasStorage] graphics] objectEnumerator];
-	while((graphic = [lineEnum nextObject])) {
+	for(LNGraphic *const graphic in [[self canvasStorage] graphics]) {
 		if([graphic isKindOfClass:[LNLine class]] && [self needsToDrawGraphic:graphic selected:NO]) [graphic draw];
 	}
 
@@ -471,9 +447,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 				if(_selectionLine) {
 					[_selectionLine setEnd:latestPoint];
 					NSMutableSet *const selection = [NSMutableSet set];
-					id graphic;
-					NSEnumerator *const graphicEnum = [[[self canvasStorage] graphics] objectEnumerator];
-					while((graphic = [graphicEnum nextObject])) if([graphic isKindOfClass:[LNLine class]] && [_selectionLine getIntersection:NULL withLine:graphic]) [selection addObject:graphic];
+					for(id const graphic in [[self canvasStorage] graphics]) if([graphic isKindOfClass:[LNLine class]] && [_selectionLine getIntersection:NULL withLine:graphic]) [selection addObject:graphic];
 					[self select:initialSelection byExtendingSelection:NO];
 					[self invertSelect:selection];
 					if([[self selection] containsObject:initialPrimarySelection]) [self setPrimarySelection:initialPrimarySelection];
@@ -496,9 +470,7 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 		[self setNeedsDisplay:YES];
 	}
 	[[self window] discardEventsMatchingMask:NSAnyEventMask beforeEvent:nil];
-	NSEvent *event;
-	NSEnumerator *const eventEnum = [ignoredEvents objectEnumerator];
-	while((event = [eventEnum nextObject])) [NSApp postEvent:event atStart:YES];
+	for(NSEvent *const event in ignoredEvents) [NSApp postEvent:event atStart:YES];
 	if(dragging) {
 		[NSCursor pop];
 		[self _setSelectionLine:nil];

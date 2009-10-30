@@ -70,9 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 - (void)canvasSelectionDidChange:(NSNotification *)aNotif
 {
 	NSMutableIndexSet *const indexes = [NSMutableIndexSet indexSet];
-	id graphic;
-	NSEnumerator *const selectedGraphicEnum = [[canvas selection] objectEnumerator];
-	while((graphic = [selectedGraphicEnum nextObject])) {
+	for(id const graphic in [canvas selection]) {
 		int const i = [graphicsOutline rowForItem:graphic];
 		if(i >= 0) [indexes addIndex:i];
 	}

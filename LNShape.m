@@ -62,9 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	if(!_cachedPoints) {
 		NSMutableArray *const points = [[NSMutableArray alloc] init];
 		_cachedPoints = points;
-		LNLine *side, *previousSide = [_sides lastObject];
-		NSEnumerator *const sideEnum = [_sides objectEnumerator];
-		for(; (side = [sideEnum nextObject]); previousSide = side) {
+		LNLine *previousSide = [_sides lastObject];
+		for(LNLine *const side in _sides) {
 			NSPoint intersection;
 			if(![previousSide getIntersection:&intersection withLine:side]) {
 				[_cachedPoints release];
@@ -72,6 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 				break;
 			}
 			[points addObject:[NSValue valueWithPoint:intersection]];
+			previousSide = side;
 		}
 	}
 	return [[_cachedPoints retain] autorelease];
@@ -116,9 +116,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 	if(!_cachedPath) {
 		_cachedPath = [[NSBezierPath alloc] init];
 		NSEnumerator *const pointEnum = [[self points] objectEnumerator];
-		NSValue *point = [pointEnum nextObject];
-		if(point) [_cachedPath moveToPoint:[point pointValue]];
-		while((point = [pointEnum nextObject])) [_cachedPath lineToPoint:[point pointValue]];
+		NSValue *const firstPoint = [pointEnum nextObject];
+		if(firstPoint) [_cachedPath moveToPoint:[firstPoint pointValue]];
+		for(NSValue *const point in pointEnum) [_cachedPath lineToPoint:[point pointValue]];
 		[_cachedPath closePath];
 	}
 	return [[_cachedPath retain] autorelease];
