@@ -68,12 +68,10 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 	if(![[pboard types] containsObject:LNCanvasGraphicsPboardType]) return NSBeep();
 	NSSet *const graphics = [NSKeyedUnarchiver unarchiveObjectWithData:[pboard dataForType:LNCanvasGraphicsPboardType]];
 	if(![graphics count]) return;
-	[[[self canvasStorage] LN_undoManager] beginUndoGrouping];
 	[[self canvasStorage] addGraphics:[graphics allObjects]];
 	[self deselectAll:self];
 	[self select:graphics];
 	[self moveSelectionBy:NSMakeSize(15, -15)];
-	[[[self canvasStorage] LN_undoManager] endUndoGrouping];
 }*/
 - (IBAction)selectAll:(id)sender
 {
@@ -290,11 +288,9 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 - (void)moveSelectionBy:(NSSize)aSize
 {
-	[[[self canvasStorage] LN_undoManager] beginUndoGrouping];
 	id graphic;
 	NSEnumerator *const graphicEnum = [[self selection] objectEnumerator];
 	while((graphic = [graphicEnum nextObject])) if([graphic isKindOfClass:[LNLine class]]) [graphic offsetBy:aSize];
-	[[[self canvasStorage] LN_undoManager] endUndoGrouping];
 }
 
 #pragma mark -
@@ -458,7 +454,6 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 
 - (void)mouseDown:(NSEvent *)firstEvent
 {
-	BOOL beganUndoGroup = NO;
 	BOOL dragging = NO;
 	NSPoint const firstPoint = [self convertPoint:[firstEvent locationInWindow] fromView:nil];
 	id clickedGraphic;
@@ -493,10 +488,6 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 			dragging = YES;
 		}
 		NSPoint latestPoint = [self convertPoint:([latestEvent type] == NSLeftMouseDragged ? [latestEvent locationInWindow] : [[self window] mouseLocationOutsideOfEventStream]) fromView:nil];
-		if(!beganUndoGroup && [self tool] != LNSelectTool) {
-			[[[self canvasStorage] LN_undoManager] beginUndoGrouping];
-			beganUndoGroup = YES;
-		}
 		switch([self tool]) {
 			case LNLineTool:
 				if(LNNoPart == clickedPart) {
@@ -556,7 +547,6 @@ static NSString *const LNCanvasGraphicsPboardType = @"LNCanvasGraphics";
 		[NSCursor pop];
 		[self _setSelectionLine:nil];
 	} else if(deselectOnMouseUp) [self deselect:[NSSet setWithObject:clickedGraphic]];
-	if(beganUndoGroup) [[[self canvasStorage] LN_undoManager] endUndoGrouping];
 }
 - (BOOL)acceptsFirstResponder
 {
