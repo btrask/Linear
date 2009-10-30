@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 - (id)initWithSides:(NSSet *)aSet
 {
-	if((self = [self init])) {
+	if((self = [super init])) {
 		_sides = [[LNLine chainOfConnectingLines:aSet] copy];
 		if(![_sides count]) {
 			[self release];
